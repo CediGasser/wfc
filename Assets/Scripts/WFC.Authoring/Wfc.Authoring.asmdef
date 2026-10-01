@@ -1,0 +1,17 @@
+{
+    "name": "Wfc.Authoring",
+    "rootNamespace": "Wfc.Authoring",
+    "references": [
+        "Wfc",
+        "Unity.Mathematics"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

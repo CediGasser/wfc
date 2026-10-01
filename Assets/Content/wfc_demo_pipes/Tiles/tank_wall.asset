@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b76555b9ef6549e2b0931ac8326e350, type: 3}
+  m_Name: tank_wall
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
+  model: {fileID: 919132149155446097, guid: 3a6bfbd71ee944ec09d0bb88fae7cf4f, type: 3}
+  allowedOrientations: 3
+  customOrientationMask: 1
+  symmetry: 0
+  baseWeight: 1
+  gizmoColor: {r: 0.62340796, g: 0.48305902, b: 0.40295148, a: 1}
+  detectedSymmetryMask: 21845
+  detectedSymmetrySource: 3a6bfbd71ee944ec09d0bb88fae7cf4f:f61516329b6767338b85ed6a617671b5

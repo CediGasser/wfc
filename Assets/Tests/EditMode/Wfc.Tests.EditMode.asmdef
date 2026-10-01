@@ -3,6 +3,9 @@
     "rootNamespace": "Wfc.Tests",
     "references": [
         "Wfc",
+        "Wfc.Authoring",
+        "Wfc.Editor",
+        "Unity.Mathematics",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Unity.PerformanceTesting"

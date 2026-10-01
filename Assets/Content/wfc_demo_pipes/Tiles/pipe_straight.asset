@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b76555b9ef6549e2b0931ac8326e350, type: 3}
+  m_Name: pipe_straight
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
+  model: {fileID: 919132149155446097, guid: f95c286df254e4d99a90cfb4cfc9401d, type: 3}
+  allowedOrientations: 3
+  customOrientationMask: 1
+  symmetry: 0
+  baseWeight: 1
+  gizmoColor: {r: 0.62341076, g: 0.62341076, b: 0.62341076, a: 1}
+  detectedSymmetryMask: 16711935
+  detectedSymmetrySource: f95c286df254e4d99a90cfb4cfc9401d:f317ebd59710eeadc779a441e8a3c4f7
