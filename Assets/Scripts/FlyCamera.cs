@@ -1,13 +1,10 @@
 using UnityEngine;
-#if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
-#endif
 
 /// <summary>
 /// Free-flying camera for looking around a demo scene, controlled like the Scene view:
 /// hold the right mouse button to look around, WASD to move, Space/Shift to rise/sink,
 /// and scroll (while looking) to change the move speed.
-/// Works with both the legacy Input Manager and the Input System package.
 /// </summary>
 public class FlyCamera : MonoBehaviour
 {
@@ -19,8 +16,8 @@ public class FlyCamera : MonoBehaviour
     [SerializeField, Min(1f)] private float scrollSpeedFactor = 1.2f;
 
     [Header("Look")]
-    [Tooltip("Degrees of rotation per unit of mouse movement.")]
-    [SerializeField, Min(0f)] private float lookSensitivity = 2f;
+    [Tooltip("Degrees of rotation per pixel of mouse movement.")]
+    [SerializeField, Min(0f)] private float lookSensitivity = 0.2f;
     [SerializeField, Range(0f, 90f)] private float maxPitch = 89f;
 
     private float yaw;
@@ -93,10 +90,6 @@ public class FlyCamera : MonoBehaviour
         return (positive ? 1f : 0f) - (negative ? 1f : 0f);
     }
 
-#if ENABLE_INPUT_SYSTEM
-    // Matches the default 0.1 sensitivity of the legacy "Mouse X/Y" axes, so both backends feel the same.
-    private const float MouseDeltaScale = 0.1f;
-
     private static bool IsLookButtonHeld()
     {
         return Mouse.current != null && Mouse.current.rightButton.isPressed;
@@ -104,7 +97,7 @@ public class FlyCamera : MonoBehaviour
 
     private static Vector2 ReadLookDelta()
     {
-        return Mouse.current != null ? Mouse.current.delta.ReadValue() * MouseDeltaScale : Vector2.zero;
+        return Mouse.current != null ? Mouse.current.delta.ReadValue() : Vector2.zero;
     }
 
     private static float ReadScrollNotches()
@@ -125,28 +118,4 @@ public class FlyCamera : MonoBehaviour
             Axis(keyboard.spaceKey.isPressed, keyboard.shiftKey.isPressed),
             Axis(keyboard.wKey.isPressed, keyboard.sKey.isPressed));
     }
-#else
-    private static bool IsLookButtonHeld()
-    {
-        return Input.GetMouseButton(1);
-    }
-
-    private static Vector2 ReadLookDelta()
-    {
-        return new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
-    }
-
-    private static float ReadScrollNotches()
-    {
-        return Mathf.Clamp(Input.mouseScrollDelta.y, -1f, 1f);
-    }
-
-    private static Vector3 ReadMoveInput()
-    {
-        return new Vector3(
-            Axis(Input.GetKey(KeyCode.D), Input.GetKey(KeyCode.A)),
-            Axis(Input.GetKey(KeyCode.Space), Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)),
-            Axis(Input.GetKey(KeyCode.W), Input.GetKey(KeyCode.S)));
-    }
-#endif
 }
