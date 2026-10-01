@@ -19,20 +19,22 @@ Planned experiments (the list will grow):
 
 | Path | Contents |
 |---|---|
-| `Assets/Scripts/WFC/` | `Wfc` assembly: pure C# core. `Core/` holds `Direction`, `Orientation` (the 48 grid orientations) and `OrientationSet`; `Rules/` holds `RuleDerivation` (learns rules from samples) and `RulesetData` (solver-ready rules). |
-| `Assets/Scripts/WFC.Authoring/` | `Wfc.Authoring` assembly (runtime): `TileDefinition` (asset per tile), `TileInstance` (a placed tile), `RulesetAuthoring` (sample root), `Ruleset` (baked asset), `GridPlacement` and `OrientationUnity` (transform conversions). |
+| `Assets/Scripts/WFC/` | `Wfc` assembly: pure C# core. `Core/` holds `Direction`, `Orientation` (the 48 grid orientations) and `OrientationSet`; `Rules/` holds `RuleDerivation` (learns rules from samples) and `RulesetData` (solver-ready rules); `Solver/` holds `WfcGrid`, `CompiledRules`, `Wave`, `Propagator` and `WfcSolver`. |
+| `Assets/Scripts/WFC.Authoring/` | `Wfc.Authoring` assembly (runtime): `TileDefinition` (asset per tile), `TileInstance` (a placed tile), `RulesetAuthoring` (sample root), `Ruleset` (baked asset), `GridPlacement` and `OrientationUnity` (transform conversions), `Generation/WfcGenerator`. |
 | `Assets/Scripts/WFC.Editor/` | `Wfc.Editor` assembly (Editor only): `RulesetBaker`, `MeshSymmetryDetector`, live analysis, snapping, gizmos, the `RulesetSceneTool` and its overlay, shortcuts, inspectors, and the windows under `Window > WFC`. |
 | `Assets/Scripts/` | Demo/presentation MonoBehaviours in `Assembly-CSharp`, e.g. `FlyCamera` (RMB look, WASD, Space/Shift up/down, scroll = speed). |
 | `Assets/Scenes/` | One scene per demo. Ruleset samples live in the same scene as the demo that uses them (e.g. `BasicDemo` → `Pipes Ruleset`). |
 | `Assets/Content/<Demo>/` | Per-demo models, `Tiles/*.asset` tile definitions, and the baked ruleset asset (e.g. `wfc_demo_pipes/PipesRuleset.asset`). |
 | `Assets/Settings/` | URP pipeline, renderer, global settings, volume profile. |
-| `Assets/Tests/EditMode/` | `Wfc.Tests.EditMode` assembly: NUnit unit tests and performance tests. |
+| `Assets/Tests/EditMode/` | `Wfc.Tests.EditMode` assembly: NUnit unit tests and performance tests. `Solver/` holds the solver tests (category `Solver`) with the `TestRules` builder and `SolutionAssert.IsValid`. |
 
 ## Conventions
 
 - The solver core in `Wfc` doesn't depend on MonoBehaviours or scene state. Demos wrap it with thin components that visualize its state.
 - The solver can be **stepped** (observe → propagate → report changed cells), so demos can animate and inspect it.
 - Randomness is **seeded and deterministic** (`System.Random` or `Unity.Mathematics.Random` with an explicit seed, never `UnityEngine.Random`).
+- **Solver:** `WfcSolver` is a state machine. Each `Step()` does one observation: collapse the lowest-entropy cell, then propagate with bitset arc consistency (`Propagator`). The first step propagates every cell once. `ChangedCells` reports what changed. Constraints (`Constrain`, `ConstrainSide` for boundaries) are re-applied by `Reset`. Restarts use `WfcSolver.NextSeed`. The doc comments in `Solver/` are the contract the `Solver` tests check; keep both in sync.
+- **Generator:** `WfcGenerator` (in `Wfc.Authoring/Generation/`) drives the solver from `Update`, also outside Play mode (via `EditorApplication.QueuePlayerLoopUpdate`), and spawns tiles under a `DontSave` child, so output is never saved with the scene. Per-side boundaries treat a tile as lying just outside the grid. `BasicDemo` has a "Pipes Generator" next to the "Pipes Ruleset" samples.
 - Intricate low-level logic gets unit tests, and optimization claims get a `[Test, Performance]` benchmark (`Measure.Method(...)`) compared against the previous implementation.
 
 ## Rulesets
@@ -56,7 +58,7 @@ unity status                                      # Editor connected? state must
 unity recompile --json                            # after every C# change: compile + errors/warnings
 unity command console --result-only               # console entries with stack traces
 unity command clear_console
-unity command run_tests --mode EditMode --result-only [--filter <name>]
+unity command run_tests --mode EditMode --result-only [--filter <name>]   # --filter Solver --filter_type category for the solver tests
 unity command list_tests --mode EditMode --result-only
 unity command get_scene_hierarchy --result-only
 unity command eval '<C# statements; return value;>' --result-only
