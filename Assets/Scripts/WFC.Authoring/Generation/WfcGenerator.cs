@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -216,8 +217,7 @@ namespace Wfc.Authoring
 
             data = ruleset.Data;
             var gridSize = new int3(Mathf.Max(1, size.x), Mathf.Max(1, size.y), Mathf.Max(1, size.z));
-            solver = new WfcSolver(new CompiledRules(data), gridSize, seed);
-            ApplyBoundaries();
+            solver = CreateSolver(new CompiledRules(data), data, ruleset.Tiles, gridSize, seed);
             Attempts = 1;
             Steps = 0;
             DestroyOutput();
@@ -226,8 +226,13 @@ namespace Wfc.Authoring
             return true;
         }
 
-        private void ApplyBoundaries()
+        /// <summary>
+        /// A solver for this generator's boundaries on any rules, e.g. rules derived from samples that aren't baked
+        /// yet. <paramref name="tiles"/> are the tile definitions in the order of <paramref name="data"/>'s tile indices.
+        /// </summary>
+        public WfcSolver CreateSolver(CompiledRules rules, RulesetData data, IReadOnlyList<TileDefinition> tiles, int3 gridSize, uint solverSeed)
         {
+            var created = new WfcSolver(rules, gridSize, solverSeed);
             for (int d = 0; d < Directions.Count; d++)
             {
                 var side = (Direction)d;
@@ -236,13 +241,13 @@ namespace Wfc.Authoring
                 {
                     continue;
                 }
-                int tile = IndexOfTile(boundary.tile);
+                int tile = IndexOf(tiles, boundary.tile);
                 if (tile < 0)
                 {
                     Debug.LogWarning($"{name}: boundary tile {boundary.tile.name} isn't part of the ruleset, so the {side.ToShortString()} side is left unconstrained.", this);
                     continue;
                 }
-                var outside = new System.Collections.Generic.List<int>();
+                var outside = new List<int>();
                 for (int v = 0; v < data.VariantCount; v++)
                 {
                     if (data.variantTile[v] == tile)
@@ -250,15 +255,16 @@ namespace Wfc.Authoring
                         outside.Add(v);
                     }
                 }
-                solver.ConstrainSide(side, outside);
+                created.ConstrainSide(side, outside);
             }
+            return created;
         }
 
-        private int IndexOfTile(TileDefinition definition)
+        private static int IndexOf(IReadOnlyList<TileDefinition> tiles, TileDefinition definition)
         {
-            for (int i = 0; i < ruleset.Tiles.Count; i++)
+            for (int i = 0; i < tiles.Count; i++)
             {
-                if (ruleset.Tiles[i] == definition)
+                if (tiles[i] == definition)
                 {
                     return i;
                 }
@@ -339,7 +345,7 @@ namespace Wfc.Authoring
         private void OnDisable()
         {
             IsAnimating = false;
-            DestroyOutput();
+            DestroyOutput(regenerating: false);
             generated = null;
             solver = null;
         }
@@ -407,7 +413,7 @@ namespace Wfc.Authoring
             return output;
         }
 
-        private void DestroyOutput()
+        private void DestroyOutput(bool regenerating = true)
         {
             Transform output = Output;
             if (output == null)
@@ -417,9 +423,13 @@ namespace Wfc.Authoring
             if (Application.isPlaying)
             {
                 Destroy(output.gameObject);
-                // Destroy is deferred; rename so a new output can be created in the same frame.
-                output.name = OutputName + " (destroyed)";
-                output.SetParent(null);
+                // Destroy is deferred; detach so a new output can be created in the same frame. Not while disabling:
+                // Unity doesn't allow reparenting during deactivation, and nothing is created afterwards anyway.
+                if (regenerating)
+                {
+                    output.name = OutputName + " (destroyed)";
+                    output.SetParent(null);
+                }
             }
             else
             {

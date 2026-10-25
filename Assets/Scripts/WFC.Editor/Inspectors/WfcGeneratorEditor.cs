@@ -1,3 +1,4 @@
+using System.Linq;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
@@ -8,6 +9,10 @@ namespace Wfc.Editor
     [CustomEditor(typeof(WfcGenerator))]
     public sealed class WfcGeneratorEditor : UnityEditor.Editor
     {
+        // Static, so a running calibration survives the inspector being rebuilt (selection changes).
+        private static readonly WeightCalibrator.Settings CalibrationSettings = new WeightCalibrator.Settings();
+        private static WeightCalibrator calibrator;
+        private static bool showCalibration;
         private bool wasAnimating;
 
         public override void OnInspectorGUI()
@@ -60,12 +65,98 @@ namespace Wfc.Editor
                 }
             }
 
+            EditorGUILayout.Space();
+            DrawCalibration(generator);
+
             // Keep repainting while animating, plus once more so the final state (e.g. a contradiction) shows up.
-            if (generator.IsAnimating || wasAnimating)
+            if (generator.IsAnimating || wasAnimating || calibrator is { IsRunning: true })
             {
                 Repaint();
             }
             wasAnimating = generator.IsAnimating;
+        }
+
+        private static void DrawCalibration(WfcGenerator generator)
+        {
+            showCalibration = EditorGUILayout.BeginFoldoutHeaderGroup(showCalibration, "Calibrate Connection Weights");
+            if (showCalibration)
+            {
+                RulesetAuthoring root = generator.Ruleset == null ? null
+                    : FindObjectsByType<RulesetAuthoring>(FindObjectsInactive.Exclude).FirstOrDefault(r => r.Target == generator.Ruleset);
+                EditorGUILayout.LabelField(
+                    "Generates batches of grids with this generator's boundaries and adjusts every connection weight until each connection " +
+                    "appears about as often as in the samples. The result is stored as weight overrides on the ruleset root.",
+                    EditorStyles.wordWrappedMiniLabel);
+                if (root == null)
+                {
+                    EditorGUILayout.HelpBox("No ruleset root in the open scenes bakes into this generator's ruleset.", MessageType.Info);
+                    EditorGUILayout.EndFoldoutHeaderGroup();
+                    return;
+                }
+
+                bool running = calibrator is { IsRunning: true };
+                using (new EditorGUI.DisabledScope(running))
+                {
+                    WeightCalibrator.Settings s = CalibrationSettings;
+                    s.size = EditorGUILayout.Vector3IntField("Grid Size", s.size);
+                    s.generationsPerIteration = Mathf.Max(1, EditorGUILayout.IntField("Generations / Iteration", s.generationsPerIteration));
+                    s.attemptsPerGeneration = Mathf.Max(1, EditorGUILayout.IntField("Attempts / Generation", s.attemptsPerGeneration));
+                    s.iterations = Mathf.Max(1, EditorGUILayout.IntField("Iterations", s.iterations));
+                    s.alpha = EditorGUILayout.Slider(new GUIContent("Step Size", "Halved whenever an iteration gets worse than the best one."), s.alpha, 0.05f, 1f);
+                }
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    using (new EditorGUI.DisabledScope(running))
+                    {
+                        if (GUILayout.Button($"Calibrate {root.name}"))
+                        {
+                            calibrator = new WeightCalibrator(generator, root, CalibrationSettings);
+                            calibrator.Start();
+                        }
+                    }
+                    using (new EditorGUI.DisabledScope(!running))
+                    {
+                        if (GUILayout.Button("Cancel"))
+                        {
+                            calibrator.Cancel();
+                        }
+                    }
+                    using (new EditorGUI.DisabledScope(running || calibrator?.Best == null || calibrator.Root != root))
+                    {
+                        if (GUILayout.Button("Apply Best"))
+                        {
+                            calibrator.Apply();
+                        }
+                    }
+                }
+                if (calibrator != null)
+                {
+                    DrawCalibrationResults(calibrator);
+                }
+            }
+            EditorGUILayout.EndFoldoutHeaderGroup();
+        }
+
+        private static void DrawCalibrationResults(WeightCalibrator calibration)
+        {
+            if (calibration.IsRunning)
+            {
+                EditorGUILayout.LabelField(calibration.Progress, EditorStyles.miniLabel);
+            }
+            WeightCalibrator.Iteration best = calibration.Best;
+            for (int i = 0; i < calibration.Iterations.Count; i++)
+            {
+                WeightCalibrator.Iteration iteration = calibration.Iterations[i];
+                string distances = double.IsNaN(iteration.connectionDistance) ? "no grid finished"
+                    : $"connections off by {iteration.connectionDistance:P1}, tiles by {iteration.tileDistance:P1}";
+                string step = iteration.alpha > 0 ? $", step {iteration.alpha:0.###}" : ", start";
+                EditorGUILayout.LabelField($"{(iteration == best ? "★" : " ")} Iteration {i + 1}",
+                    $"{iteration.done}/{iteration.generations} done ({iteration.attempts} attempts), {distances}{step}", EditorStyles.miniLabel);
+            }
+            if (calibration.ExcludedTileNames.Count > 0)
+            {
+                EditorGUILayout.LabelField($"Left out (never appear inside the grid): {string.Join(", ", calibration.ExcludedTileNames)}", EditorStyles.wordWrappedMiniLabel);
+            }
         }
 
         /// <summary>Where the generation failed and what surrounds that cell, since the neighbours are what ruled every tile out.</summary>

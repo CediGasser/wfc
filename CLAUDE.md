@@ -19,9 +19,9 @@ Planned experiments (the list will grow):
 
 | Path | Contents |
 |---|---|
-| `Assets/Scripts/WFC/` | `Wfc` assembly: pure C# core. `Core/` holds `Direction`, `Orientation` (the 48 grid orientations) and `OrientationSet`; `Rules/` holds `RuleDerivation` (learns rules from samples), `RuleAnalysis` (diagnostics on the finished rules), `RulesetData` (solver-ready rules) and `ConnectionKey` (stable connection identity for overrides); `Solver/` holds `WfcGrid`, `CompiledRules`, `Wave`, `Propagator` and `WfcSolver`. |
+| `Assets/Scripts/WFC/` | `Wfc` assembly: pure C# core. `Core/` holds `Direction`, `Orientation` (the 48 grid orientations) and `OrientationSet`; `Rules/` holds `RuleDerivation` (learns rules from samples), `RuleAnalysis` (diagnostics on the finished rules), `RulesetData` (solver-ready rules), `ConnectionKey` (stable connection identity for overrides) and `ConnectionStatistics` (compares generated grids with the samples, adjusts connection weights); `Solver/` holds `WfcGrid`, `CompiledRules`, `Wave`, `Propagator` and `WfcSolver`. |
 | `Assets/Scripts/WFC.Authoring/` | `Wfc.Authoring` assembly (runtime): `TileDefinition` (asset per tile), `TileInstance` (a placed tile), `RulesetAuthoring` (sample root), `Ruleset` (baked asset), `GridPlacement` and `OrientationUnity` (transform conversions), `Generation/WfcGenerator`. |
-| `Assets/Scripts/WFC.Editor/` | `Wfc.Editor` assembly (Editor only): `RulesetBaker`, `MeshSymmetryDetector`, live analysis, snapping, gizmos, the `RulesetSceneTool` and its overlay, shortcuts, inspectors, and the windows under `Window > WFC`. |
+| `Assets/Scripts/WFC.Editor/` | `Wfc.Editor` assembly (Editor only): `RulesetBaker`, `MeshSymmetryDetector`, `WeightCalibrator`, live analysis, snapping, gizmos, the `RulesetSceneTool` and its overlay, shortcuts, inspectors, and the windows under `Window > WFC`. |
 | `Assets/Scripts/` | Demo/presentation MonoBehaviours in `Assembly-CSharp`, e.g. `FlyCamera` (RMB look, WASD, Space/Shift up/down, scroll = speed). |
 | `Assets/Scenes/` | One scene per demo. Ruleset samples live in the same scene as the demo that uses them (e.g. `BasicDemo` → `Pipes Ruleset`). |
 | `Assets/Content/<Demo>/` | Per-demo models, `Tiles/*.asset` tile definitions, and the baked ruleset asset (e.g. `wfc_demo_pipes/PipesRuleset.asset`). |
@@ -50,6 +50,7 @@ Planned experiments (the list will grow):
   - Variant weight: the tile's base weight spread across its variants. Leave it at 1 unless there's a reason; connection weights already carry how common a tile is.
   - Connection weight: one per learned connection, undirected. Presence = 1 or Frequency = how often it was observed (the default). Overrides on the root replace it (keyed by `ConnectionKey`), and 0 forbids the connection.
   - Pairwise weights are what keep structures (tanks, pipes) sample-sized and avoid contradictions: per-tile weights alone can't express "next to X, prefer Y".
+  - **Calibration:** the generator inspector's "Calibrate Connection Weights" (`WeightCalibrator`) generates batches with the generator's boundaries and adjusts every connection weight until each connection appears about as often among neighbouring cells as in the samples. The best iteration is applied as overrides on the root. Tiles that never appear inside the grid (e.g. the boundary tile below) are left out.
 - **Strict input:** a sample placed in an orientation its tile doesn't allow is ignored (even if it looks identical to an allowed one), and a tile whose allowed set isn't a group is an error and gets no variants.
 - **Baking:** `RulesetBaker.Bake(root)` writes the `Ruleset` asset. "Out of date" means the baked asset's `SourceHash` differs from the current samples' hash. Symmetry is re-detected automatically when a model is reimported; the import hash is stored on the definition.
 
