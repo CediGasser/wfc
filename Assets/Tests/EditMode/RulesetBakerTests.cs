@@ -102,12 +102,12 @@ namespace Wfc.Tests
             Place(root, block, Vector3.zero);
             Place(root, block, Vector3.right);
 
-            OrbitKey key = RulesetBaker.Analyze(root, detectSymmetry: false).Data.orbits.Single().key;
+            ConnectionKey key = RulesetBaker.Analyze(root, detectSymmetry: false).Data.connections.Single().key;
             root.SetOverride(key, 3f);
 
-            Orbit orbit = RulesetBaker.Analyze(root, detectSymmetry: false).Data.orbits.Single();
-            Assert.That(orbit.weight, Is.EqualTo(3f));
-            Assert.That(orbit.overridden, Is.True);
+            Connection connection = RulesetBaker.Analyze(root, detectSymmetry: false).Data.connections.Single();
+            Assert.That(connection.weight, Is.EqualTo(3f));
+            Assert.That(connection.overridden, Is.True);
             Assert.That(root.TryGetOverride(key.Reversed, out float weight) && weight == 3f, Is.True);
         }
     }

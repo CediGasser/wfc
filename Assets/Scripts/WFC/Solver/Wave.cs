@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using Unity.Mathematics;
 
 namespace Wfc
 {
     /// <summary>
     /// The remaining possible variants of every cell, one bitset per cell, with entropy kept up to date incrementally
-    /// as variants are removed.
+    /// as variants are removed. Also records which cells lost variants since the last <see cref="ClearChanged"/>.
     /// </summary>
     public sealed class Wave
     {
@@ -18,6 +19,8 @@ namespace Wfc
         private readonly double[] weightLogWeights;
         private readonly double fullSumWeights;
         private readonly double fullSumWeightLogWeights;
+        private readonly bool[] changed;
+        private readonly List<int> changedCells = new List<int>();
 
         /// <summary>Creates a wave where every variant is possible in every cell. Weights come from <paramref name="rules"/>.</summary>
         public Wave(int cellCount, CompiledRules rules)
@@ -29,6 +32,7 @@ namespace Wfc
             counts = new int[cellCount];
             sumWeights = new double[cellCount];
             sumWeightLogWeights = new double[cellCount];
+            changed = new bool[cellCount];
 
             weights = new double[VariantCount];
             weightLogWeights = new double[VariantCount];
@@ -55,6 +59,12 @@ namespace Wfc
 
         /// <summary>Words per cell bitset, the same as <see cref="CompiledRules.WordsPerMask"/>.</summary>
         public int WordsPerCell { get; }
+
+        /// <summary>Number of cells with exactly one variant left.</summary>
+        public int DecidedCount { get; private set; }
+
+        /// <summary>Cells that lost variants since the last <see cref="ClearChanged"/> or <see cref="Reset"/>, each listed once.</summary>
+        public IReadOnlyList<int> ChangedCells => changedCells;
 
         public bool IsPossible(int cell, int variant)
         {
@@ -123,7 +133,7 @@ namespace Wfc
             return (float)Math.Max(0, Math.Log(sum) - sumWeightLogWeights[cell] / sum);
         }
 
-        /// <summary>Makes every variant possible in every cell again.</summary>
+        /// <summary>Makes every variant possible in every cell again and clears <see cref="ChangedCells"/>.</summary>
         public void Reset()
         {
             for (int cell = 0; cell < CellCount; cell++)
@@ -133,11 +143,35 @@ namespace Wfc
                 sumWeights[cell] = fullSumWeights;
                 sumWeightLogWeights[cell] = fullSumWeightLogWeights;
             }
+            DecidedCount = VariantCount == 1 ? CellCount : 0;
+            ClearChanged();
+        }
+
+        public void ClearChanged()
+        {
+            foreach (int cell in changedCells)
+            {
+                changed[cell] = false;
+            }
+            changedCells.Clear();
         }
 
         private void Removed(int cell, int variant)
         {
+            if (!changed[cell])
+            {
+                changed[cell] = true;
+                changedCells.Add(cell);
+            }
             counts[cell]--;
+            if (counts[cell] == 1)
+            {
+                DecidedCount++;
+            }
+            else if (counts[cell] == 0)
+            {
+                DecidedCount--;
+            }
             sumWeights[cell] -= weights[variant];
             sumWeightLogWeights[cell] -= weightLogWeights[variant];
         }

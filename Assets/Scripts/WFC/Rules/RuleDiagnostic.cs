@@ -13,7 +13,6 @@ namespace Wfc
     {
         InvalidTile,
         AllowedSetNotAGroup,
-        OrientationMapped,
         InvalidOrientation,
         OverlappingInstances,
         UnsnappedInstance,

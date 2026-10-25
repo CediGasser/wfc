@@ -56,8 +56,8 @@ namespace Wfc.Editor
                 Vector3 cell = analysis.input.instances[pair.sourceA].cell.ToVector3();
                 Vector3 direction = pair.direction.ToVector().ToVector3();
                 Vector3 face = cell + direction * 0.5f;
-                Gizmos.color = pair.orbit < 0 ? SkippedColor
-                    : analysis.Data.orbits[pair.orbit].weight > 0f ? ConnectedColor
+                Gizmos.color = pair.connection < 0 ? SkippedColor
+                    : analysis.Data.connections[pair.connection].weight > 0f ? ConnectedColor
                     : DisabledColor;
                 Gizmos.DrawLine(face - direction * 0.2f, face + direction * 0.2f);
                 Gizmos.DrawSphere(face, 0.035f);

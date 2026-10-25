@@ -53,10 +53,10 @@ namespace Wfc.Tests.Solver
             RulesetData derived = RuleDerivation.Derive(input).data;
             foreach (var (a, b, weight) in overrides)
             {
-                Orbit orbit = derived.orbits.Single(o =>
+                Connection connection = derived.connections.Single(o =>
                     (derived.tileNames[o.tileA] == a && derived.tileNames[o.tileB] == b) ||
                     (derived.tileNames[o.tileA] == b && derived.tileNames[o.tileB] == a));
-                input.overrides.Add(new WeightOverride(orbit.key, weight));
+                input.overrides.Add(new WeightOverride(connection.key, weight));
             }
             return RuleDerivation.Derive(input).data;
         }

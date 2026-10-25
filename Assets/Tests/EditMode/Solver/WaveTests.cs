@@ -106,5 +106,32 @@ namespace Wfc.Tests.Solver
             Assert.That(wave.GetCount(1), Is.EqualTo(96));
             Assert.That(wave.GetEntropy(1), Is.EqualTo(Mathf.Log(96)).Within(Tolerance));
         }
+
+        [Test]
+        public void TracksChangedAndDecidedCells()
+        {
+            var wave = new Wave(3, TestRules.ManyVariants().Compile());
+            Assert.That(wave.DecidedCount, Is.EqualTo(0));
+            Assert.That(wave.ChangedCells, Is.Empty);
+
+            wave.Restrict(0, new ulong[] { 1UL, 0UL });
+            wave.Ban(2, 5);
+            wave.Ban(2, 6);
+            Assert.That(wave.ChangedCells, Is.EqualTo(new[] { 0, 2 }), "each cell listed once, in order");
+            Assert.That(wave.DecidedCount, Is.EqualTo(1));
+
+            wave.Ban(0, 0);
+            Assert.That(wave.DecidedCount, Is.EqualTo(0), "a cell without variants isn't decided");
+
+            wave.ClearChanged();
+            Assert.That(wave.ChangedCells, Is.Empty);
+            Assert.That(wave.Ban(2, 5), Is.False, "already banned");
+            Assert.That(wave.ChangedCells, Is.Empty);
+
+            wave.Ban(1, 1);
+            wave.Reset();
+            Assert.That(wave.ChangedCells, Is.Empty);
+            Assert.That(wave.DecidedCount, Is.EqualTo(0));
+        }
     }
 }

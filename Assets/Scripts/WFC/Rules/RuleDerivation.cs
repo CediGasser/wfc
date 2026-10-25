@@ -8,23 +8,22 @@ namespace Wfc
     /// Learns adjacency rules from sample placements. Every pair of face-to-face neighbouring instances is an
     /// observation; it is expanded by every orientation both tiles allow (the world can be rotated as a whole),
     /// and variants that look identical (symmetries inside the allowed set) are merged. The result is a
-    /// symmetric, undirected rule set with one weight per learned connection.
+    /// symmetric adjacency list per variant and direction, with one weight per learned connection. Problems with
+    /// the input are reported as diagnostics, and the finished rules are checked by <see cref="RuleAnalysis"/>.
     /// </summary>
     public static class RuleDerivation
     {
         public static DerivationResult Derive(DerivationInput input)
         {
-            return new Context(input).Run();
+            DerivationResult result = new Context(input).Run();
+            result.data.diagnostics = result.data.diagnostics.Concat(RuleAnalysis.Diagnose(input, result)).ToArray();
+            return result;
         }
 
-        private sealed class OrbitBuilder
+        private sealed class ConnectionBuilder
         {
-            public OrbitKey key;
-            public int tileA;
-            public int tileB;
-            public int observations;
-            public float weight;
-            public bool overridden;
+            public Connection connection;
+            /// <summary>Every variant pair the connection expands into, each in its canonical form.</summary>
             public HashSet<(int a, int d, int b)> members;
         }
 
@@ -35,28 +34,28 @@ namespace Wfc
             private readonly DerivationInput input;
             private readonly List<RuleDiagnostic> diagnostics = new List<RuleDiagnostic>();
             private readonly int tileCount;
+            private readonly bool[] validTile;
             private readonly OrientationSet[] allowed;
-            private readonly OrientationSet[] geometric;
             private readonly OrientationSet[] effective;
             private readonly int[] representative;
             private readonly int[] variantOf;
             private readonly List<int> variantTile = new List<int>();
             private readonly List<byte> variantOrientation = new List<byte>();
-            private readonly Dictionary<string, int> tileById = new Dictionary<string, int>();
             private readonly Orientation[] normalized;
             private readonly bool[] valid;
             private readonly int[] instanceVariant;
             private readonly Dictionary<int3, int> cells = new Dictionary<int3, int>();
-            private readonly List<OrbitBuilder> orbits = new List<OrbitBuilder>();
-            private readonly Dictionary<OrbitKey, int> orbitByKey = new Dictionary<OrbitKey, int>();
+            private readonly Dictionary<string, int> tileById = new Dictionary<string, int>();
+            private readonly List<ConnectionBuilder> connections = new List<ConnectionBuilder>();
+            private readonly Dictionary<ConnectionKey, int> connectionByKey = new Dictionary<ConnectionKey, int>();
             private readonly List<ObservedPair> pairs = new List<ObservedPair>();
 
             public Context(DerivationInput input)
             {
                 this.input = input;
                 tileCount = input.tiles.Count;
+                validTile = new bool[tileCount];
                 allowed = new OrientationSet[tileCount];
-                geometric = new OrientationSet[tileCount];
                 effective = new OrientationSet[tileCount];
                 representative = new int[tileCount * Orientation.Count];
                 variantOf = new int[tileCount * Orientation.Count];
@@ -74,8 +73,7 @@ namespace Wfc
                 CollectCells();
                 CollectPairs();
                 ApplyWeights();
-                var adjacency = BuildAdjacency(out int[] adjacencyStart, out int[] adjacencyVariant, out float[] adjacencyWeight);
-                DiagnoseTiles(adjacency);
+                BuildAdjacency(out int[] adjacencyStart, out int[] adjacencyVariant, out int[] adjacencyConnection);
 
                 var data = new RulesetData
                 {
@@ -86,16 +84,12 @@ namespace Wfc
                     variantWeight = ComputeVariantWeights(),
                     adjacencyStart = adjacencyStart,
                     adjacencyVariant = adjacencyVariant,
-                    adjacencyWeight = adjacencyWeight,
-                    orbits = orbits.Select(o => new Orbit
+                    adjacencyConnection = adjacencyConnection,
+                    connections = connections.Select(c =>
                     {
-                        key = o.key,
-                        tileA = o.tileA,
-                        tileB = o.tileB,
-                        observations = o.observations,
-                        weight = o.weight,
-                        overridden = o.overridden,
-                        memberCount = o.members.Count,
+                        Connection connection = c.connection;
+                        connection.memberCount = c.members.Count;
+                        return connection;
                     }).ToArray(),
                     diagnostics = diagnostics.ToArray(),
                 };
@@ -117,17 +111,17 @@ namespace Wfc
                     {
                         Report(DiagnosticSeverity.Error, DiagnosticCode.InvalidTile, $"{spec.name} has the same id as another tile ({spec.id}).", t);
                     }
-
-                    OrientationSet set = spec.allowed;
-                    if (!set.IsGroup)
+                    allowed[t] = spec.allowed;
+                    if (!spec.allowed.IsGroup)
                     {
-                        set = set.Closure();
-                        Report(DiagnosticSeverity.Warning, DiagnosticCode.AllowedSetNotAGroup,
-                            $"{spec.name}: the allowed orientations aren't closed under combination, so they were extended to {set.Count} orientations.", t);
+                        int[] sources = Enumerable.Range(0, input.instances.Count).Where(i => input.instances[i].tile == t).ToArray();
+                        Report(DiagnosticSeverity.Error, DiagnosticCode.AllowedSetNotAGroup,
+                            $"{spec.name}: the allowed orientations must contain the identity and every combination of its members. The tile is ignored.", t, sources);
+                        continue;
                     }
-                    allowed[t] = set;
-                    geometric[t] = spec.symmetry.With(Orientation.Identity).Closure();
-                    effective[t] = geometric[t].Intersect(set).Closure();
+                    validTile[t] = true;
+                    OrientationSet geometric = spec.symmetry.With(Orientation.Identity).Closure();
+                    effective[t] = geometric.Intersect(spec.allowed);
                 }
             }
 
@@ -139,6 +133,10 @@ namespace Wfc
                     {
                         representative[t * Orientation.Count + o] = NoVariant;
                         variantOf[t * Orientation.Count + o] = NoVariant;
+                    }
+                    if (!validTile[t])
+                    {
+                        continue;
                     }
                     // Variants are the cosets g·S of the effective symmetry S; the smallest index represents each.
                     foreach (Orientation g in allowed[t])
@@ -181,41 +179,21 @@ namespace Wfc
                         Report(DiagnosticSeverity.Error, DiagnosticCode.InvalidTile, $"Instance {i} references an unknown tile.", -1, i);
                         continue;
                     }
-
-                    Orientation g = instance.orientation;
-                    string name = input.tiles[t].name;
-                    if (!allowed[t].Contains(g))
+                    if (!validTile[t])
                     {
-                        if (!TryFindLookalike(t, g, out Orientation lookalike))
-                        {
-                            Report(DiagnosticSeverity.Warning, DiagnosticCode.InvalidOrientation,
-                                $"{name} is placed in orientation {g}, which its allowed orientations don't include. It is ignored.", t, i);
-                            continue;
-                        }
-                        Report(DiagnosticSeverity.Info, DiagnosticCode.OrientationMapped,
-                            $"{name} is placed in orientation {g}, which it doesn't allow, but it looks identical to allowed orientation {lookalike}. It is treated as that.", t, i);
-                        g = lookalike;
+                        continue;
+                    }
+                    if (!allowed[t].Contains(instance.orientation))
+                    {
+                        Report(DiagnosticSeverity.Warning, DiagnosticCode.InvalidOrientation,
+                            $"{input.tiles[t].name} is placed in orientation {instance.orientation}, which its allowed orientations don't include. It is ignored.", t, i);
+                        continue;
                     }
 
-                    normalized[i] = Orientation.FromIndex(representative[t * Orientation.Count + g.Index]);
+                    normalized[i] = Orientation.FromIndex(representative[t * Orientation.Count + instance.orientation.Index]);
                     instanceVariant[i] = variantOf[t * Orientation.Count + normalized[i].Index];
                     valid[i] = true;
                 }
-            }
-
-            private bool TryFindLookalike(int tile, Orientation placed, out Orientation lookalike)
-            {
-                // The placed model looks like allowed orientation a if a⁻¹·g is a geometric symmetry.
-                foreach (Orientation candidate in allowed[tile])
-                {
-                    if (geometric[tile].Contains(candidate.Inverse * placed))
-                    {
-                        lookalike = candidate;
-                        return true;
-                    }
-                }
-                lookalike = Orientation.Identity;
-                return false;
             }
 
             private void CollectCells()
@@ -253,7 +231,7 @@ namespace Wfc
                     {
                         if (cells.TryGetValue(input.instances[i].cell + direction.ToVector(), out int j))
                         {
-                            pairs.Add(new ObservedPair { sourceA = i, sourceB = j, direction = direction, orbit = Observe(i, direction, j) });
+                            pairs.Add(new ObservedPair { sourceA = i, sourceB = j, direction = direction, connection = Observe(i, direction, j) });
                         }
                     }
                 }
@@ -267,7 +245,7 @@ namespace Wfc
                 Orientation gB = normalized[b];
 
                 var members = new HashSet<(int, int, int)>();
-                OrbitKey best = default;
+                ConnectionKey best = default;
                 bool hasBest = false;
                 // Rotating the whole pair by h keeps it valid as long as both tiles allow h.
                 foreach (Orientation h in allowed[tileA].Intersect(allowed[tileB]))
@@ -279,7 +257,8 @@ namespace Wfc
                     int variantB = variantOf[tileB * Orientation.Count + orientationB];
                     members.Add(CanonicalTriple(variantA, mapped, variantB));
 
-                    OrbitKey key = new OrbitKey(input.tiles[tileA].id, orientationA, mapped, input.tiles[tileB].id, orientationB).Undirected;
+                    // The smallest key over all members identifies the connection, independent of tile order.
+                    ConnectionKey key = new ConnectionKey(input.tiles[tileA].id, orientationA, mapped, input.tiles[tileB].id, orientationB).Undirected;
                     if (!hasBest || key.CompareTo(best) < 0)
                     {
                         best = key;
@@ -287,21 +266,24 @@ namespace Wfc
                     }
                 }
 
-                if (orbitByKey.TryGetValue(best, out int existing))
+                if (connectionByKey.TryGetValue(best, out int existing))
                 {
-                    orbits[existing].observations++;
+                    connections[existing].connection.observations++;
                     return existing;
                 }
-                orbitByKey.Add(best, orbits.Count);
-                orbits.Add(new OrbitBuilder
+                connectionByKey.Add(best, connections.Count);
+                connections.Add(new ConnectionBuilder
                 {
-                    key = best,
-                    tileA = tileById.TryGetValue(best.tileA ?? string.Empty, out int keyTileA) ? keyTileA : tileA,
-                    tileB = tileById.TryGetValue(best.tileB ?? string.Empty, out int keyTileB) ? keyTileB : tileB,
-                    observations = 1,
+                    connection = new Connection
+                    {
+                        key = best,
+                        tileA = tileById.TryGetValue(best.tileA ?? string.Empty, out int keyTileA) ? keyTileA : tileA,
+                        tileB = tileById.TryGetValue(best.tileB ?? string.Empty, out int keyTileB) ? keyTileB : tileB,
+                        observations = 1,
+                    },
                     members = members,
                 });
-                return orbits.Count - 1;
+                return connections.Count - 1;
             }
 
             private static (int, int, int) CanonicalTriple(int a, Direction direction, int b)
@@ -313,23 +295,24 @@ namespace Wfc
 
             private void ApplyWeights()
             {
-                var overrides = new Dictionary<OrbitKey, float>();
+                var overrides = new Dictionary<ConnectionKey, float>();
                 foreach (WeightOverride weightOverride in input.overrides)
                 {
                     overrides[weightOverride.key.Undirected] = weightOverride.weight;
                 }
-                var used = new HashSet<OrbitKey>();
-                foreach (OrbitBuilder orbit in orbits)
+                var used = new HashSet<ConnectionKey>();
+                foreach (ConnectionBuilder builder in connections)
                 {
-                    orbit.weight = input.weightSource == WeightSource.Frequency ? orbit.observations : 1f;
-                    if (overrides.TryGetValue(orbit.key, out float weight))
+                    ref Connection connection = ref builder.connection;
+                    connection.weight = input.weightSource == WeightSource.Frequency ? connection.observations : 1f;
+                    if (overrides.TryGetValue(connection.key, out float weight))
                     {
-                        orbit.weight = math.max(0f, weight);
-                        orbit.overridden = true;
-                        used.Add(orbit.key);
+                        connection.weight = math.max(0f, weight);
+                        connection.overridden = true;
+                        used.Add(connection.key);
                     }
                 }
-                foreach (OrbitKey key in overrides.Keys)
+                foreach (ConnectionKey key in overrides.Keys)
                 {
                     if (!used.Contains(key))
                     {
@@ -339,115 +322,50 @@ namespace Wfc
                 }
             }
 
-            private List<(int neighbour, float weight)>[] BuildAdjacency(out int[] start, out int[] neighbour, out float[] weight)
+            /// <summary>Lists every member of every connection with a weight above 0, in both directions.</summary>
+            private void BuildAdjacency(out int[] start, out int[] neighbour, out int[] connection)
             {
-                int variantCount = variantTile.Count;
-                var slots = new Dictionary<int, float>[variantCount * Directions.Count];
-                void Add(int from, Direction direction, int to, float w)
+                // Per slot: neighbour variant -> connection. Connections partition the variant pairs, so each
+                // neighbour belongs to exactly one connection.
+                var slots = new SortedDictionary<int, int>[variantTile.Count * Directions.Count];
+                void Add(int from, Direction direction, int to, int index)
                 {
                     int slot = from * Directions.Count + (int)direction;
-                    slots[slot] ??= new Dictionary<int, float>();
-                    slots[slot][to] = slots[slot].TryGetValue(to, out float existing) ? math.max(existing, w) : w;
+                    (slots[slot] ??= new SortedDictionary<int, int>()).TryAdd(to, index);
                 }
 
-                foreach (OrbitBuilder orbit in orbits)
+                for (int c = 0; c < connections.Count; c++)
                 {
-                    if (orbit.weight <= 0f)
+                    if (connections[c].connection.weight <= 0f)
                     {
                         continue;
                     }
-                    foreach (var (a, d, b) in orbit.members)
+                    foreach (var (a, d, b) in connections[c].members)
                     {
-                        Add(a, (Direction)d, b, orbit.weight);
-                        Add(b, ((Direction)d).Opposite(), a, orbit.weight);
+                        Add(a, (Direction)d, b, c);
+                        Add(b, ((Direction)d).Opposite(), a, c);
                     }
                 }
 
-                var lists = new List<(int, float)>[slots.Length];
                 start = new int[slots.Length + 1];
                 var neighbours = new List<int>();
-                var weights = new List<float>();
+                var owners = new List<int>();
                 for (int slot = 0; slot < slots.Length; slot++)
                 {
                     start[slot] = neighbours.Count;
-                    lists[slot] = slots[slot] == null
-                        ? new List<(int, float)>()
-                        : slots[slot].OrderBy(entry => entry.Key).Select(entry => (entry.Key, entry.Value)).ToList();
-                    foreach (var (n, w) in lists[slot])
+                    if (slots[slot] == null)
+                    {
+                        continue;
+                    }
+                    foreach (var (n, c) in slots[slot])
                     {
                         neighbours.Add(n);
-                        weights.Add(w);
+                        owners.Add(c);
                     }
                 }
                 start[slots.Length] = neighbours.Count;
                 neighbour = neighbours.ToArray();
-                weight = weights.ToArray();
-                return lists;
-            }
-
-            private void DiagnoseTiles(List<(int neighbour, float weight)>[] adjacency)
-            {
-                var connected = new bool[tileCount];
-                var selfConnected = new bool[tileCount];
-                foreach (OrbitBuilder orbit in orbits)
-                {
-                    if (orbit.weight <= 0f)
-                    {
-                        continue;
-                    }
-                    connected[orbit.tileA] = true;
-                    connected[orbit.tileB] = true;
-                    if (orbit.tileA == orbit.tileB)
-                    {
-                        selfConnected[orbit.tileA] = true;
-                    }
-                }
-
-                for (int t = 0; t < tileCount; t++)
-                {
-                    int[] sources = Enumerable.Range(0, input.instances.Count).Where(i => valid[i] && input.instances[i].tile == t).ToArray();
-                    if (sources.Length == 0)
-                    {
-                        continue;
-                    }
-                    string name = input.tiles[t].name;
-                    if (!connected[t])
-                    {
-                        Report(DiagnosticSeverity.Warning, DiagnosticCode.TileNeverConnected,
-                            $"{name} never touches another tile in the samples, so it can't be generated.", t, sources);
-                        continue;
-                    }
-                    if (input.tiles[t].isEmpty && !selfConnected[t])
-                    {
-                        Report(DiagnosticSeverity.Warning, DiagnosticCode.MissingSelfConnection,
-                            $"{name} never touches another {name} in the samples, so two {name} cells can't be neighbours.", t, sources);
-                    }
-
-                    int deadFaces = 0;
-                    for (int v = 0; v < variantTile.Count; v++)
-                    {
-                        if (variantTile[v] != t)
-                        {
-                            continue;
-                        }
-                        Orientation inverse = Orientation.FromIndex(variantOrientation[v]).Inverse;
-                        for (int d = 0; d < Directions.Count; d++)
-                        {
-                            if (adjacency[v * Directions.Count + d].Count == 0)
-                            {
-                                deadFaces |= 1 << (int)inverse.Apply((Direction)d);
-                            }
-                        }
-                    }
-                    if (deadFaces != 0)
-                    {
-                        string faces = string.Join(", ", Enumerable.Range(0, Directions.Count)
-                            .Where(d => (deadFaces & (1 << d)) != 0)
-                            .Select(d => ((Direction)d).ToShortString()));
-                        Report(DiagnosticSeverity.Warning, DiagnosticCode.DeadEnd,
-                            $"{name}: nothing was learned next to local face(s) {faces} in at least one orientation, so those variants only fit at the edge of the world.", t, sources);
-                    }
-                }
+                connection = owners.ToArray();
             }
 
             private void Report(DiagnosticSeverity severity, DiagnosticCode code, string message, int tile = -1, params int[] sources)

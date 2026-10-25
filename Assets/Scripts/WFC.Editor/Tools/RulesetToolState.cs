@@ -103,7 +103,7 @@ namespace Wfc.Editor
             for (int i = start; i < end; i++)
             {
                 int neighbour = data.adjacencyVariant[i];
-                candidates.Add(new Candidate(neighbour, analysis.tiles[data.variantTile[neighbour]], data.GetVariantOrientation(neighbour), data.adjacencyWeight[i]));
+                candidates.Add(new Candidate(neighbour, analysis.tiles[data.variantTile[neighbour]], data.GetVariantOrientation(neighbour), data.GetEntryWeight(i)));
             }
             return candidates;
         }

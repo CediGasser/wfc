@@ -50,12 +50,12 @@ namespace Wfc.Editor
             RulesetData data = analysis.Data;
             int n = data.TileCount;
             var counts = new int[n, n];
-            foreach (Orbit orbit in data.orbits.Where(o => o.weight > 0f))
+            foreach (Connection connection in data.connections.Where(o => o.weight > 0f))
             {
-                counts[orbit.tileA, orbit.tileB]++;
-                if (orbit.tileA != orbit.tileB)
+                counts[connection.tileA, connection.tileB]++;
+                if (connection.tileA != connection.tileB)
                 {
-                    counts[orbit.tileB, orbit.tileA]++;
+                    counts[connection.tileB, connection.tileA]++;
                 }
             }
             int max = Mathf.Max(1, counts.Cast<int>().DefaultIfEmpty(0).Max());
@@ -121,20 +121,20 @@ namespace Wfc.Editor
             EditorGUILayout.Space();
             EditorGUILayout.LabelField($"{data.tileNames[selectedA]} ↔ {data.tileNames[selectedB]}", EditorStyles.boldLabel);
             listScroll = EditorGUILayout.BeginScrollView(listScroll);
-            for (int i = 0; i < data.orbits.Length; i++)
+            for (int i = 0; i < data.connections.Length; i++)
             {
-                Orbit orbit = data.orbits[i];
-                bool matches = (orbit.tileA == selectedA && orbit.tileB == selectedB) || (orbit.tileA == selectedB && orbit.tileB == selectedA);
+                Connection connection = data.connections[i];
+                bool matches = (connection.tileA == selectedA && connection.tileB == selectedB) || (connection.tileA == selectedB && connection.tileB == selectedA);
                 if (!matches)
                 {
                     continue;
                 }
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    EditorGUILayout.LabelField(RulesetEditorUtility.DescribeOrbit(data, orbit), $"seen {orbit.observations}×, weight {orbit.weight:0.##}{(orbit.overridden ? " (override)" : "")}");
+                    EditorGUILayout.LabelField(RulesetEditorUtility.DescribeConnection(data, connection), $"seen {connection.observations}×, weight {connection.weight:0.##}{(connection.overridden ? " (override)" : "")}");
                     if (GUILayout.Button("Select", EditorStyles.miniButton, GUILayout.Width(52)))
                     {
-                        RulesetEditorUtility.SelectInstances(analysis, RulesetEditorUtility.GetOrbitSources(analysis, i));
+                        RulesetEditorUtility.SelectInstances(analysis, RulesetEditorUtility.GetConnectionSources(analysis, i));
                     }
                 }
             }

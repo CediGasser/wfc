@@ -19,7 +19,7 @@ Planned experiments (the list will grow):
 
 | Path | Contents |
 |---|---|
-| `Assets/Scripts/WFC/` | `Wfc` assembly: pure C# core. `Core/` holds `Direction`, `Orientation` (the 48 grid orientations) and `OrientationSet`; `Rules/` holds `RuleDerivation` (learns rules from samples) and `RulesetData` (solver-ready rules); `Solver/` holds `WfcGrid`, `CompiledRules`, `Wave`, `Propagator` and `WfcSolver`. |
+| `Assets/Scripts/WFC/` | `Wfc` assembly: pure C# core. `Core/` holds `Direction`, `Orientation` (the 48 grid orientations) and `OrientationSet`; `Rules/` holds `RuleDerivation` (learns rules from samples), `RuleAnalysis` (diagnostics on the finished rules), `RulesetData` (solver-ready rules) and `ConnectionKey` (stable connection identity for overrides); `Solver/` holds `WfcGrid`, `CompiledRules`, `Wave`, `Propagator` and `WfcSolver`. |
 | `Assets/Scripts/WFC.Authoring/` | `Wfc.Authoring` assembly (runtime): `TileDefinition` (asset per tile), `TileInstance` (a placed tile), `RulesetAuthoring` (sample root), `Ruleset` (baked asset), `GridPlacement` and `OrientationUnity` (transform conversions), `Generation/WfcGenerator`. |
 | `Assets/Scripts/WFC.Editor/` | `Wfc.Editor` assembly (Editor only): `RulesetBaker`, `MeshSymmetryDetector`, live analysis, snapping, gizmos, the `RulesetSceneTool` and its overlay, shortcuts, inspectors, and the windows under `Window > WFC`. |
 | `Assets/Scripts/` | Demo/presentation MonoBehaviours in `Assembly-CSharp`, e.g. `FlyCamera` (RMB look, WASD, Space/Shift up/down, scroll = speed). |
@@ -33,7 +33,7 @@ Planned experiments (the list will grow):
 - The solver core in `Wfc` doesn't depend on MonoBehaviours or scene state. Demos wrap it with thin components that visualize its state.
 - The solver can be **stepped** (observe → propagate → report changed cells), so demos can animate and inspect it.
 - Randomness is **seeded and deterministic** (`System.Random` or `Unity.Mathematics.Random` with an explicit seed, never `UnityEngine.Random`).
-- **Solver:** `WfcSolver` is a state machine. Each `Step()` does one observation: collapse the lowest-entropy cell, then propagate with bitset arc consistency (`Propagator`). The first step propagates every cell once. `ChangedCells` reports what changed. Constraints (`Constrain`, `ConstrainSide` for boundaries) are re-applied by `Reset`. Restarts use `WfcSolver.NextSeed`. The doc comments in `Solver/` are the contract the `Solver` tests check; keep both in sync.
+- **Solver:** `WfcSolver` is a state machine. Each `Step()` does one observation: collapse the lowest-entropy cell, then propagate with bitset arc consistency (`Propagator`). The first step propagates every cell once. `Wave` tracks which cells lost variants (`ChangedCells`, exposed by the solver per step) and how many are decided (`DecidedCount`). Constraints (`Constrain`, `ConstrainSide` for boundaries) are re-applied by `Reset`. Restarts use `WfcSolver.NextSeed`. The doc comments in `Solver/` are the contract the `Solver` tests check; keep both in sync.
 - **Generator:** `WfcGenerator` (in `Wfc.Authoring/Generation/`) drives the solver from `Update`, also outside Play mode (via `EditorApplication.QueuePlayerLoopUpdate`), and spawns tiles under a `DontSave` child, so output is never saved with the scene. Per-side boundaries treat a tile as lying just outside the grid. `BasicDemo` has a "Pipes Generator" next to the "Pipes Ruleset" samples.
 - Intricate low-level logic gets unit tests, and optimization claims get a `[Test, Performance]` benchmark (`Measure.Method(...)`) compared against the previous implementation.
 
@@ -46,7 +46,11 @@ Planned experiments (the list will grow):
   - Each observed pair is expanded by every orientation both tiles allow (`allowed_A ∩ allowed_B`).
   - Variants are the cosets of `detected symmetry ∩ allowed` within `allowed`, represented by the smallest orientation index.
   - Symmetries outside the allowed set don't count; that's how gravity is encoded. Give upright tiles `YawMirror`, not `Fixed`.
-- **Weights:** undirected, one per learned connection ("orbit", keyed by `OrbitKey`). Presence = 1 by default, or frequency; overrides live on the root, and 0 forbids a connection. Each tile's base weight is spread across its variants.
+- **Weights:** a collapse picks a variant with probability ∝ its variant weight × the weights of its connections to all decided neighbours.
+  - Variant weight: the tile's base weight spread across its variants. Leave it at 1 unless there's a reason; connection weights already carry how common a tile is.
+  - Connection weight: one per learned connection, undirected. Presence = 1 or Frequency = how often it was observed (the default). Overrides on the root replace it (keyed by `ConnectionKey`), and 0 forbids the connection.
+  - Pairwise weights are what keep structures (tanks, pipes) sample-sized and avoid contradictions: per-tile weights alone can't express "next to X, prefer Y".
+- **Strict input:** a sample placed in an orientation its tile doesn't allow is ignored (even if it looks identical to an allowed one), and a tile whose allowed set isn't a group is an error and gets no variants.
 - **Baking:** `RulesetBaker.Bake(root)` writes the `Ruleset` asset. "Out of date" means the baked asset's `SourceHash` differs from the current samples' hash. Symmetry is re-detected automatically when a model is reimported; the import hash is stored on the definition.
 
 ## Unity CLI: drive the running Editor

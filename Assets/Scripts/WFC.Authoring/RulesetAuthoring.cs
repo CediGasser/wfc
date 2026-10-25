@@ -16,8 +16,8 @@ namespace Wfc.Authoring
         [Tooltip("The baked ruleset asset. Created next to the scene on the first bake if empty.")]
         [SerializeField] private Ruleset target;
 
-        [Tooltip("Presence: every connection that appears has weight 1. Frequency: weight is how often it appears.")]
-        [SerializeField] private WeightSource weightSource = WeightSource.Presence;
+        [Tooltip("Presence: every connection that appears has weight 1. Frequency: weight is how often it appears. Overrides replace either; 0 forbids a connection.")]
+        [SerializeField] private WeightSource weightSource = WeightSource.Frequency;
 
         [Tooltip("Tile used by 'Fill empty cells', usually air.")]
         [SerializeField] private TileDefinition fillTile;
@@ -43,9 +43,9 @@ namespace Wfc.Authoring
 
         public bool ShowConnections => showConnections;
 
-        public bool TryGetOverride(OrbitKey key, out float weight)
+        public bool TryGetOverride(ConnectionKey key, out float weight)
         {
-            OrbitKey undirected = key.Undirected;
+            ConnectionKey undirected = key.Undirected;
             foreach (WeightOverride weightOverride in overrides)
             {
                 if (weightOverride.key.Undirected.Equals(undirected))
@@ -58,15 +58,15 @@ namespace Wfc.Authoring
             return false;
         }
 
-        public void SetOverride(OrbitKey key, float weight)
+        public void SetOverride(ConnectionKey key, float weight)
         {
             RemoveOverride(key);
             overrides.Add(new WeightOverride(key.Undirected, Mathf.Max(0f, weight)));
         }
 
-        public void RemoveOverride(OrbitKey key)
+        public void RemoveOverride(ConnectionKey key)
         {
-            OrbitKey undirected = key.Undirected;
+            ConnectionKey undirected = key.Undirected;
             overrides.RemoveAll(o => o.key.Undirected.Equals(undirected));
         }
     }

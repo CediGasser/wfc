@@ -26,9 +26,11 @@ namespace Wfc
         private readonly Propagator propagator;
         private readonly List<(int cell, ulong[] mask)> constraints = new List<(int, ulong[])>();
         private readonly float[] noise;
-        private readonly bool[] changedFlags;
-        private readonly List<int> changedCells = new List<int>();
+        private readonly ulong[] collapseMask;
         private readonly double[] candidateWeights;
+        // Per variant: stamp + number of decided neighbours that allow it, see CollapseCell.
+        private readonly int[] candidateHits;
+        private int collapseStamp;
         private Unity.Mathematics.Random random;
         private bool initialPropagationDone;
 
@@ -44,8 +46,9 @@ namespace Wfc
             Wave = new Wave(Grid.CellCount, rules);
             propagator = new Propagator(rules, Grid, Wave);
             noise = new float[Grid.CellCount];
-            changedFlags = new bool[Grid.CellCount];
+            collapseMask = new ulong[rules.WordsPerMask];
             candidateWeights = new double[rules.VariantCount];
+            candidateHits = new int[rules.VariantCount];
             Reset(seed);
         }
 
@@ -67,7 +70,7 @@ namespace Wfc
         public int ContradictionCell { get; private set; } = -1;
 
         /// <summary>Cells that lost variants during the last <see cref="Step"/>, including the collapsed cell. Each listed once.</summary>
-        public IReadOnlyList<int> ChangedCells => changedCells;
+        public IReadOnlyList<int> ChangedCells => Wave.ChangedCells;
 
         /// <summary>A deterministic follow-up seed for restarts; never 0.</summary>
         public static uint NextSeed(uint seed) => Hash(seed + 0x9E3779B9u);
@@ -160,7 +163,7 @@ namespace Wfc
         /// <summary>
         /// Picks one remaining variant for the cell and removes all others, without propagating. The probability of a
         /// variant is its base weight times the product of its connection weights with all decided neighbours.
-        /// Returns the chosen variant.
+        /// Returns the chosen variant, or -1 if the cell has no variant left.
         /// </summary>
         public int CollapseCell(int cell)
         {
@@ -169,7 +172,9 @@ namespace Wfc
                 return -1;
             }
 
-            double total = 0;
+            // Start every remaining variant at its base weight. The stamp marks which variants take part, so the
+            // hit counters never need clearing: a variant is allowed by k decided neighbours if its counter is stamp + k.
+            collapseStamp += Directions.Count + 1;
             double baseTotal = 0;
             ReadOnlySpan<ulong> domain = Wave.GetDomain(cell);
             for (int word = 0; word < domain.Length; word++)
@@ -179,18 +184,51 @@ namespace Wfc
                 {
                     int variant = word * 64 + math.tzcnt(bits);
                     bits &= bits - 1;
-                    double weight = Rules.GetVariantWeight(variant);
-                    baseTotal += weight;
-                    for (int d = 0; d < Directions.Count; d++)
+                    candidateWeights[variant] = Rules.GetVariantWeight(variant);
+                    candidateHits[variant] = collapseStamp;
+                    baseTotal += candidateWeights[variant];
+                }
+            }
+
+            // Multiply in the connection weight of every decided neighbour. Its list towards this cell holds exactly
+            // the variants it allows here; the others end up with weight 0.
+            int decided = 0;
+            for (int d = 0; d < Directions.Count; d++)
+            {
+                int neighbour = Grid.GetNeighbour(cell, (Direction)d);
+                int other = neighbour >= 0 ? GetCollapsedVariant(neighbour) : -1;
+                if (other < 0)
+                {
+                    continue;
+                }
+                Direction back = ((Direction)d).Opposite();
+                ReadOnlySpan<int> listed = Rules.GetNeighbourVariants(other, back);
+                ReadOnlySpan<float> weights = Rules.GetNeighbourWeights(other, back);
+                for (int i = 0; i < listed.Length; i++)
+                {
+                    int variant = listed[i];
+                    if (candidateHits[variant] == collapseStamp + decided)
                     {
-                        int neighbour = Grid.GetNeighbour(cell, (Direction)d);
-                        if (neighbour >= 0 && Wave.GetCount(neighbour) == 1)
-                        {
-                            weight *= Rules.GetConnectionWeight(variant, (Direction)d, GetCollapsedVariant(neighbour));
-                        }
+                        candidateHits[variant]++;
+                        candidateWeights[variant] *= weights[i];
                     }
-                    candidateWeights[variant] = weight;
-                    total += weight;
+                }
+                decided++;
+            }
+
+            double total = 0;
+            for (int word = 0; word < domain.Length; word++)
+            {
+                ulong bits = domain[word];
+                while (bits != 0)
+                {
+                    int variant = word * 64 + math.tzcnt(bits);
+                    bits &= bits - 1;
+                    if (candidateHits[variant] != collapseStamp + decided)
+                    {
+                        candidateWeights[variant] = 0;
+                    }
+                    total += candidateWeights[variant];
                 }
             }
 
@@ -198,9 +236,9 @@ namespace Wfc
             bool useBase = total <= 0;
             int chosen = Pick(domain, random.NextDouble() * (useBase ? baseTotal : total), useBase);
 
-            var mask = new ulong[Rules.WordsPerMask];
-            mask[chosen >> 6] = 1UL << (chosen & 63);
-            if (Wave.Restrict(cell, mask))
+            Array.Clear(collapseMask, 0, collapseMask.Length);
+            collapseMask[chosen >> 6] = 1UL << (chosen & 63);
+            if (Wave.Restrict(cell, collapseMask))
             {
                 propagator.Enqueue(cell);
             }
@@ -219,20 +257,10 @@ namespace Wfc
             {
                 return Status;
             }
-            ClearChangedCells();
-            propagator.ClearChanged();
-
-            if (!initialPropagationDone)
+            Wave.ClearChanged();
+            if (PropagateInitially() != SolverStatus.Running)
             {
-                initialPropagationDone = true;
-                for (int cell = 0; cell < Grid.CellCount; cell++)
-                {
-                    propagator.Enqueue(cell);
-                }
-                if (!PropagateAndCollect())
-                {
-                    return Status;
-                }
+                return Status;
             }
 
             int target = FindLowestEntropyCell();
@@ -243,15 +271,33 @@ namespace Wfc
             }
 
             CollapseCell(target);
-            MarkChanged(target);
-            if (!PropagateAndCollect())
+            if (!Propagate())
             {
                 return Status;
             }
-            if (FindLowestEntropyCell() < 0)
+            if (Wave.DecidedCount == Grid.CellCount)
             {
                 Status = SolverStatus.Done;
             }
+            return Status;
+        }
+
+        /// <summary>
+        /// Propagates every cell once, which the first <see cref="Step"/> does anyway. Afterwards the wave shows what
+        /// the rules and constraints allow at all, before anything is collapsed. Does nothing after the first call.
+        /// </summary>
+        public SolverStatus PropagateInitially()
+        {
+            if (Status != SolverStatus.Running || initialPropagationDone)
+            {
+                return Status;
+            }
+            initialPropagationDone = true;
+            for (int cell = 0; cell < Grid.CellCount; cell++)
+            {
+                propagator.Enqueue(cell);
+            }
+            Propagate();
             return Status;
         }
 
@@ -299,7 +345,6 @@ namespace Wfc
             }
             Wave.Reset();
             propagator.Clear();
-            ClearChangedCells();
             initialPropagationDone = false;
             Status = SolverStatus.Running;
             ContradictionCell = -1;
@@ -311,8 +356,7 @@ namespace Wfc
                     break;
                 }
             }
-            ClearChangedCells();
-            propagator.ClearChanged();
+            Wave.ClearChanged();
         }
 
         /// <summary>The cell's only remaining variant, or -1 if it's undecided or has no variant left.</summary>
@@ -325,7 +369,6 @@ namespace Wfc
         {
             if (Wave.Restrict(cell, mask))
             {
-                MarkChanged(cell);
                 if (Wave.GetCount(cell) == 0)
                 {
                     Status = SolverStatus.Contradiction;
@@ -334,41 +377,18 @@ namespace Wfc
                 }
                 propagator.Enqueue(cell);
             }
-            return PropagateAndCollect();
+            return Propagate();
         }
 
-        private bool PropagateAndCollect()
+        private bool Propagate()
         {
-            bool ok = propagator.Propagate();
-            foreach (int cell in propagator.ChangedCells)
+            if (propagator.Propagate())
             {
-                MarkChanged(cell);
+                return true;
             }
-            propagator.ClearChanged();
-            if (!ok)
-            {
-                Status = SolverStatus.Contradiction;
-                ContradictionCell = propagator.ContradictionCell;
-            }
-            return ok;
-        }
-
-        private void MarkChanged(int cell)
-        {
-            if (!changedFlags[cell])
-            {
-                changedFlags[cell] = true;
-                changedCells.Add(cell);
-            }
-        }
-
-        private void ClearChangedCells()
-        {
-            foreach (int cell in changedCells)
-            {
-                changedFlags[cell] = false;
-            }
-            changedCells.Clear();
+            Status = SolverStatus.Contradiction;
+            ContradictionCell = propagator.ContradictionCell;
+            return false;
         }
 
         /// <summary>Walks the possible variants, subtracting weights from <paramref name="target"/> until it drops below 0.</summary>

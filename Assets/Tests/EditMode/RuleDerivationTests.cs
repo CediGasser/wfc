@@ -89,7 +89,7 @@ namespace Wfc.Tests
 
             RulesetData data = RuleDerivation.Derive(input).data;
 
-            Assert.That(data.orbits.Length, Is.EqualTo(1));
+            Assert.That(data.connections.Length, Is.EqualTo(1));
             foreach (int v in VariantsOf(data, 0))
             {
                 Direction axis = data.GetVariantOrientation(v).Apply(Direction.PosX);
@@ -138,7 +138,7 @@ namespace Wfc.Tests
             RulesetData data = RuleDerivation.Derive(input).data;
 
             int sign = VariantsOf(data, 0).Single();
-            Assert.That(data.orbits.Single().memberCount, Is.EqualTo(1));
+            Assert.That(data.connections.Single().memberCount, Is.EqualTo(1));
             Assert.That(Neighbours(data, sign, Direction.PosX).Length, Is.EqualTo(1));
             int block = data.FindVariant(1, Orientation.Identity);
             Assert.That(Neighbours(data, block, Direction.NegX), Is.EqualTo(new[] { sign }));
@@ -158,24 +158,24 @@ namespace Wfc.Tests
                 return input;
             }
 
-            Assert.That(RuleDerivation.Derive(Build(OrientationSet.AllRotations)).data.orbits.Single().memberCount, Is.EqualTo(24));
-            Assert.That(RuleDerivation.Derive(Build(OrientationSet.All)).data.orbits.Single().memberCount, Is.EqualTo(48));
+            Assert.That(RuleDerivation.Derive(Build(OrientationSet.AllRotations)).data.connections.Single().memberCount, Is.EqualTo(24));
+            Assert.That(RuleDerivation.Derive(Build(OrientationSet.All)).data.connections.Single().memberCount, Is.EqualTo(48));
         }
 
         [Test]
-        public void OrbitKeyDoesNotDependOnHowThePairIsPlaced()
+        public void ConnectionKeyDoesNotDependOnHowThePairIsPlaced()
         {
-            OrbitKey Derive(Orientation worldRotation, int3 offset)
+            ConnectionKey Derive(Orientation worldRotation, int3 offset)
             {
                 var input = new DerivationInput();
                 input.tiles.Add(Tile("a", OrientationSet.YawMirror, OrientationSet.IdentityOnly));
                 input.tiles.Add(Tile("b", OrientationSet.YawMirror, OrientationSet.IdentityOnly));
                 Place(input, 0, offset, worldRotation);
                 Place(input, 1, offset + worldRotation.Apply(new int3(1, 0, 0)), worldRotation * Orientation.RotationY90);
-                return RuleDerivation.Derive(input).data.orbits.Single().key;
+                return RuleDerivation.Derive(input).data.connections.Single().key;
             }
 
-            OrbitKey reference = Derive(Orientation.Identity, Origin);
+            ConnectionKey reference = Derive(Orientation.Identity, Origin);
             Assert.That(Derive(Orientation.RotationY90, new int3(5, 2, -3)), Is.EqualTo(reference));
             Assert.That(Derive(Orientation.MirrorX * Orientation.RotationY90, new int3(-7, 0, 1)), Is.EqualTo(reference));
             Assert.That(reference.Reversed.Undirected, Is.EqualTo(reference.Undirected));
@@ -209,7 +209,7 @@ namespace Wfc.Tests
                         var (backStart, backEnd) = data.GetNeighbourRange(n, ((Direction)d).Opposite());
                         int back = System.Array.IndexOf(data.adjacencyVariant, v, backStart, backEnd - backStart);
                         Assert.That(back, Is.GreaterThanOrEqualTo(0), $"{v} lists {n} in {(Direction)d}, but not the other way round");
-                        Assert.That(data.adjacencyWeight[back], Is.EqualTo(data.adjacencyWeight[i]));
+                        Assert.That(data.GetEntryWeight(back), Is.EqualTo(data.GetEntryWeight(i)));
                     }
                 }
             }
@@ -231,14 +231,14 @@ namespace Wfc.Tests
             Place(input, 0, new int3(7, 0, 0));
 
             input.weightSource = WeightSource.Frequency;
-            Orbit[] orbits = RuleDerivation.Derive(input).data.orbits;
-            Assert.That(orbits.Length, Is.EqualTo(2));
-            Assert.That(orbits.Single(o => o.tileA != o.tileB).observations, Is.EqualTo(2));
-            Assert.That(orbits.Single(o => o.tileA != o.tileB).weight, Is.EqualTo(2f));
-            Assert.That(orbits.Single(o => o.tileA == o.tileB).weight, Is.EqualTo(1f));
+            Connection[] connections = RuleDerivation.Derive(input).data.connections;
+            Assert.That(connections.Length, Is.EqualTo(2));
+            Assert.That(connections.Single(o => o.tileA != o.tileB).observations, Is.EqualTo(2));
+            Assert.That(connections.Single(o => o.tileA != o.tileB).weight, Is.EqualTo(2f));
+            Assert.That(connections.Single(o => o.tileA == o.tileB).weight, Is.EqualTo(1f));
 
             input.weightSource = WeightSource.Presence;
-            Assert.That(RuleDerivation.Derive(input).data.orbits.All(o => o.weight == 1f), Is.True);
+            Assert.That(RuleDerivation.Derive(input).data.connections.All(o => o.weight == 1f), Is.True);
         }
 
         [Test]
@@ -249,45 +249,57 @@ namespace Wfc.Tests
             input.tiles.Add(Tile("scaffolding", OrientationSet.YawMirror, OrientationSet.IdentityOnly));
             Place(input, 0, Origin);
             Place(input, 1, new int3(0, 1, 0));
-            OrbitKey key = RuleDerivation.Derive(input).data.orbits.Single().key;
+            ConnectionKey key = RuleDerivation.Derive(input).data.connections.Single().key;
 
             input.overrides.Add(new WeightOverride(key.Reversed, 5f));
             RulesetData weighted = RuleDerivation.Derive(input).data;
-            Assert.That(weighted.orbits.Single().weight, Is.EqualTo(5f), "overrides match regardless of key direction");
-            Assert.That(weighted.orbits.Single().overridden, Is.True);
-            Assert.That(weighted.adjacencyWeight.All(w => w == 5f), Is.True);
+            Assert.That(weighted.connections.Single().weight, Is.EqualTo(5f), "overrides match regardless of key direction");
+            Assert.That(weighted.connections.Single().overridden, Is.True);
+            Assert.That(Enumerable.Range(0, weighted.adjacencyVariant.Length).All(i => weighted.GetEntryWeight(i) == 5f), Is.True);
 
             input.overrides[0] = new WeightOverride(key, 0f);
             RulesetData removed = RuleDerivation.Derive(input).data;
             Assert.That(removed.adjacencyVariant, Is.Empty);
             Assert.That(removed.diagnostics.Any(d => d.code == DiagnosticCode.TileNeverConnected), Is.True);
 
-            input.overrides[0] = new WeightOverride(new OrbitKey("nope", 0, Direction.PosX, "nope", 0), 2f);
+            input.overrides[0] = new WeightOverride(new ConnectionKey("nope", 0, Direction.PosX, "nope", 0), 2f);
             Assert.That(RuleDerivation.Derive(input).data.diagnostics.Any(d => d.code == DiagnosticCode.OrphanedOverride), Is.True);
         }
 
         [Test]
         public void DiagnosticsReportProblems()
         {
+            var notAGroup = new OrientationSet(1UL | (1UL << Orientation.RotationY90.Index));
             var input = new DerivationInput();
             input.tiles.Add(Tile("floor", OrientationSet.IdentityOnly, OrientationSet.All));
             input.tiles.Add(Tile("sign", OrientationSet.IdentityOnly, OrientationSet.IdentityOnly));
             input.tiles.Add(Tile("air", OrientationSet.All, OrientationSet.All, isEmpty: true));
-            Place(input, 0, Origin, Orientation.RotationY90);                 // looks identical to the allowed orientation
-            Place(input, 1, new int3(1, 0, 0), Orientation.RotationY90);      // not allowed, not symmetric
+            input.tiles.Add(Tile("broken", notAGroup, OrientationSet.IdentityOnly));
+            input.tiles.Add(Tile("lonely", OrientationSet.IdentityOnly, OrientationSet.IdentityOnly));
+            Place(input, 0, Origin);
+            Place(input, 1, new int3(1, 0, 0), Orientation.RotationY90);      // not allowed
             Place(input, 2, new int3(0, 1, 0));
             Place(input, 2, new int3(0, 1, 0));                               // overlap
+            Place(input, 3, new int3(0, -1, 0));                              // tile with an invalid allowed set
+            Place(input, 0, new int3(5, 0, 0), Orientation.RotationY90);      // looks identical, but still not allowed
+            Place(input, 4, new int3(9, 0, 0));                               // touches nothing
 
             DerivationResult result = RuleDerivation.Derive(input);
             DiagnosticCode[] codes = result.data.diagnostics.Select(d => d.code).ToArray();
 
-            Assert.That(codes, Does.Contain(DiagnosticCode.OrientationMapped));
             Assert.That(codes, Does.Contain(DiagnosticCode.InvalidOrientation));
             Assert.That(codes, Does.Contain(DiagnosticCode.OverlappingInstances));
             Assert.That(codes, Does.Contain(DiagnosticCode.MissingSelfConnection));
             Assert.That(codes, Does.Contain(DiagnosticCode.DeadEnd));
-            Assert.That(result.instanceVariant[1], Is.EqualTo(-1));
-            Assert.That(result.instanceVariant[3], Is.EqualTo(-1));
+            Assert.That(codes, Does.Contain(DiagnosticCode.TileNeverConnected));
+            RuleDiagnostic notAGroupError = result.data.diagnostics.Single(d => d.code == DiagnosticCode.AllowedSetNotAGroup);
+            Assert.That(notAGroupError.severity, Is.EqualTo(DiagnosticSeverity.Error));
+            Assert.That(notAGroupError.sourceIds, Is.EqualTo(new[] { 4 }));
+            Assert.That(VariantsOf(result.data, 3), Is.Empty, "a tile with an invalid allowed set gets no variants");
+            foreach (int skipped in new[] { 1, 3, 4, 5 })
+            {
+                Assert.That(result.instanceVariant[skipped], Is.EqualTo(-1), $"instance {skipped}");
+            }
             Assert.That(result.pairs.Count, Is.EqualTo(1), "only floor and air touch");
         }
 

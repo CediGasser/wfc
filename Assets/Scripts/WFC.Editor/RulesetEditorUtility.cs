@@ -32,12 +32,12 @@ namespace Wfc.Editor
         }
 
         /// <summary>For example "floor +Y ↔ scaffolding -Y": the faces of both tiles, in each tile's own frame.</summary>
-        public static string DescribeOrbit(RulesetData data, Orbit orbit)
+        public static string DescribeConnection(RulesetData data, Connection connection)
         {
-            Direction direction = orbit.key.Direction;
-            Direction faceA = Orientation.FromIndex(orbit.key.orientationA).Inverse.Apply(direction);
-            Direction faceB = Orientation.FromIndex(orbit.key.orientationB).Inverse.Apply(direction.Opposite());
-            return $"{data.tileNames[orbit.tileA]} {faceA.ToShortString()}  ↔  {data.tileNames[orbit.tileB]} {faceB.ToShortString()}";
+            Direction direction = connection.key.Direction;
+            Direction faceA = Orientation.FromIndex(connection.key.orientationA).Inverse.Apply(direction);
+            Direction faceB = Orientation.FromIndex(connection.key.orientationB).Inverse.Apply(direction.Opposite());
+            return $"{data.tileNames[connection.tileA]} {faceA.ToShortString()}  ↔  {data.tileNames[connection.tileB]} {faceB.ToShortString()}";
         }
 
         /// <summary>
@@ -144,9 +144,9 @@ namespace Wfc.Editor
             }
         }
 
-        public static IEnumerable<int> GetOrbitSources(RulesetBaker.Analysis analysis, int orbit)
+        public static IEnumerable<int> GetConnectionSources(RulesetBaker.Analysis analysis, int connection)
         {
-            return analysis.result.pairs.Where(p => p.orbit == orbit).SelectMany(p => new[] { p.sourceA, p.sourceB });
+            return analysis.result.pairs.Where(p => p.connection == connection).SelectMany(p => new[] { p.sourceA, p.sourceB });
         }
 
         private static Material GetGhostMaterial()

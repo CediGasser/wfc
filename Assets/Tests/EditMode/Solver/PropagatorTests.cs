@@ -41,7 +41,7 @@ namespace Wfc.Tests.Solver
         {
             var (grid, wave, propagator) = Create(new int3(2, 2, 2));
             Assert.That(propagator.Propagate(), Is.True);
-            Assert.That(propagator.ChangedCells, Is.Empty);
+            Assert.That(wave.ChangedCells, Is.Empty);
             for (int cell = 0; cell < grid.CellCount; cell++)
             {
                 Assert.That(wave.GetCount(cell), Is.EqualTo(2));
@@ -61,7 +61,7 @@ namespace Wfc.Tests.Solver
             Assert.That(wave.IsPossible(lower, bottom), Is.True);
             Assert.That(wave.GetCount(upper), Is.EqualTo(1));
             Assert.That(wave.IsPossible(upper, top), Is.True);
-            Assert.That(propagator.ChangedCells, Is.EquivalentTo(new[] { lower, upper }));
+            Assert.That(wave.ChangedCells, Is.EquivalentTo(new[] { lower, upper }));
         }
 
         [Test]
@@ -84,6 +84,7 @@ namespace Wfc.Tests.Solver
             int diagonal = grid.ToIndex(new int3(1, 1, 0));
 
             wave.Ban(origin, top);
+            wave.ClearChanged();
             propagator.Enqueue(origin);
             Assert.That(propagator.Propagate(), Is.True);
 
@@ -93,7 +94,7 @@ namespace Wfc.Tests.Solver
             Assert.That(wave.IsPossible(right, bottom), Is.True, "bottom only sits next to bottom horizontally");
             Assert.That(wave.IsPossible(diagonal, top), Is.True, "reached via its neighbours");
             Assert.That(wave.GetCount(diagonal), Is.EqualTo(1));
-            Assert.That(propagator.ChangedCells, Is.EquivalentTo(new[] { above, right, diagonal }), "the enqueued origin itself wasn't shrunk by propagation");
+            Assert.That(wave.ChangedCells, Is.EquivalentTo(new[] { above, right, diagonal }), "the origin was banned before ClearChanged");
         }
 
         [Test]
@@ -108,6 +109,7 @@ namespace Wfc.Tests.Solver
             var propagator = new Propagator(checkerRules, grid, wave);
 
             wave.Ban(0, white);
+            wave.ClearChanged();
             propagator.Enqueue(0);
             Assert.That(propagator.Propagate(), Is.True);
 
@@ -118,20 +120,14 @@ namespace Wfc.Tests.Solver
                 Assert.That(wave.GetCount(cell), Is.EqualTo(1), $"cell {c}");
                 Assert.That(wave.IsPossible(cell, expected), Is.True, $"cell {c}");
             }
-            Assert.That(propagator.ChangedCells.Count, Is.EqualTo(grid.CellCount - 1));
-            Assert.That(propagator.ChangedCells.Distinct().Count(), Is.EqualTo(propagator.ChangedCells.Count), "each cell listed once");
+            Assert.That(wave.ChangedCells.Count, Is.EqualTo(grid.CellCount - 1));
+            Assert.That(wave.ChangedCells.Distinct().Count(), Is.EqualTo(wave.ChangedCells.Count), "each cell listed once");
         }
 
         [Test]
-        public void ClearChangedAndClear()
+        public void ClearEmptiesTheQueue()
         {
             var (grid, wave, propagator) = Create(new int3(1, 2, 1));
-            EnqueueAll(propagator, grid);
-            propagator.Propagate();
-            propagator.ClearChanged();
-            Assert.That(propagator.ChangedCells, Is.Empty);
-
-            wave.Reset();
             EnqueueAll(propagator, grid);
             propagator.Clear();
             Assert.That(propagator.Propagate(), Is.True);

@@ -14,8 +14,6 @@ namespace Wfc
         private readonly Wave wave;
         private readonly Queue<int> queue = new Queue<int>();
         private readonly bool[] queued;
-        private readonly bool[] changed;
-        private readonly List<int> changedCells = new List<int>();
         private readonly ulong[] allowed;
 
         public Propagator(CompiledRules rules, WfcGrid grid, Wave wave)
@@ -24,15 +22,8 @@ namespace Wfc
             this.grid = grid;
             this.wave = wave;
             queued = new bool[grid.CellCount];
-            changed = new bool[grid.CellCount];
             allowed = new ulong[rules.WordsPerMask];
         }
-
-        /// <summary>
-        /// Cells whose variants were removed by <see cref="Propagate"/> since the last <see cref="ClearChanged"/>,
-        /// each listed once. Enqueued cells are only included if propagation itself shrank them.
-        /// </summary>
-        public IReadOnlyList<int> ChangedCells => changedCells;
 
         /// <summary>The cell that ran out of variants in the last failed <see cref="Propagate"/>, or -1.</summary>
         public int ContradictionCell { get; private set; } = -1;
@@ -47,7 +38,10 @@ namespace Wfc
             }
         }
 
-        /// <summary>Processes the queue until it's empty. Returns false as soon as a cell has no variants left.</summary>
+        /// <summary>
+        /// Processes the queue until it's empty. Returns false as soon as a cell has no variants left. The cells it
+        /// shrinks show up in <see cref="Wave.ChangedCells"/>.
+        /// </summary>
         public bool Propagate()
         {
             while (queue.Count > 0)
@@ -90,11 +84,6 @@ namespace Wfc
                     {
                         continue;
                     }
-                    if (!changed[neighbour])
-                    {
-                        changed[neighbour] = true;
-                        changedCells.Add(neighbour);
-                    }
                     if (wave.GetCount(neighbour) == 0)
                     {
                         return Fail(neighbour);
@@ -105,20 +94,10 @@ namespace Wfc
             return true;
         }
 
-        public void ClearChanged()
-        {
-            foreach (int cell in changedCells)
-            {
-                changed[cell] = false;
-            }
-            changedCells.Clear();
-        }
-
-        /// <summary>Empties the queue and the changed list and forgets the contradiction, e.g. after the wave was reset.</summary>
+        /// <summary>Empties the queue and forgets the contradiction, e.g. after the wave was reset.</summary>
         public void Clear()
         {
             ClearQueue();
-            ClearChanged();
             ContradictionCell = -1;
         }
 

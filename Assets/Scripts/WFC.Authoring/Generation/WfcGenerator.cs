@@ -95,22 +95,7 @@ namespace Wfc.Authoring
 
         public Transform Output => transform.Find(OutputName);
 
-        public int DecidedCount
-        {
-            get
-            {
-                if (solver == null)
-                {
-                    return 0;
-                }
-                int decided = 0;
-                for (int cell = 0; cell < solver.Grid.CellCount; cell++)
-                {
-                    decided += solver.Wave.GetCount(cell) == 1 ? 1 : 0;
-                }
-                return decided;
-            }
-        }
+        public int DecidedCount => solver?.Wave.DecidedCount ?? 0;
 
         /// <summary>
         /// The cell where the generation failed: the one left without any possible tile after the last attempt.

@@ -1,3 +1,4 @@
+using System.Linq;
 using NUnit.Framework;
 
 namespace Wfc.Tests.Solver
@@ -83,6 +84,32 @@ namespace Wfc.Tests.Solver
                     }
                 }
             }
+        }
+
+        [Test]
+        public void SparseListsMatchTheRulesetData()
+        {
+            RulesetData data = TestRules.WeightedConnections().Data();
+            var rules = new CompiledRules(data);
+            Assert.That(rules.ConnectionCount, Is.EqualTo(data.connections.Length));
+            for (int v = 0; v < data.VariantCount; v++)
+            {
+                for (int d = 0; d < Directions.Count; d++)
+                {
+                    var direction = (Direction)d;
+                    var (start, end) = data.GetNeighbourRange(v, direction);
+                    Assert.That(rules.GetNeighbourVariants(v, direction).ToArray(), Is.EqualTo(data.adjacencyVariant.Skip(start).Take(end - start).ToArray()));
+                    float[] weights = rules.GetNeighbourWeights(v, direction).ToArray();
+                    for (int i = start; i < end; i++)
+                    {
+                        int n = data.adjacencyVariant[i];
+                        Assert.That(weights[i - start], Is.EqualTo(data.GetEntryWeight(i)));
+                        Assert.That(rules.GetConnectionWeight(v, direction, n), Is.EqualTo(data.GetEntryWeight(i)));
+                        Assert.That(rules.GetConnection(v, direction, n), Is.EqualTo(data.adjacencyConnection[i]));
+                    }
+                }
+            }
+            Assert.That(rules.GetConnection(0, Direction.PosX, data.VariantCount + 5), Is.EqualTo(-1), "not a neighbour");
         }
 
         [Test]

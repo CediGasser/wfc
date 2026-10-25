@@ -39,7 +39,7 @@ namespace Wfc
         public readonly List<TileSpec> tiles = new List<TileSpec>();
         public readonly List<SampleInstance> instances = new List<SampleInstance>();
         public readonly List<WeightOverride> overrides = new List<WeightOverride>();
-        public WeightSource weightSource = WeightSource.Presence;
+        public WeightSource weightSource = WeightSource.Frequency;
 
         /// <summary>Stable hash of everything that influences the result, used to detect outdated bakes.</summary>
         public string ComputeHash()
@@ -70,15 +70,19 @@ namespace Wfc
         }
     }
 
-    /// <summary>One learned connection as shown in the editor.</summary>
+    /// <summary>
+    /// One learned connection: an observed pair plus every variant pair it expands into under the allowed
+    /// orientations. All of those pairs share the connection's weight.
+    /// </summary>
     [Serializable]
-    public struct Orbit
+    public struct Connection
     {
-        public OrbitKey key;
+        public ConnectionKey key;
         public int tileA;
         public int tileB;
         /// <summary>How many observed sample pairs produced this connection.</summary>
         public int observations;
+        /// <summary>Weight from the <see cref="WeightSource"/>, or the override. 0 means the connection is forbidden.</summary>
         public float weight;
         public bool overridden;
         /// <summary>Number of distinct variant pairs the connection expands into.</summary>
@@ -87,7 +91,7 @@ namespace Wfc
 
     /// <summary>
     /// Solver-ready rules: variants (tile + orientation) with weights, and for every variant and direction the
-    /// list of variants allowed next to it, with connection weights. Adjacency is stored in CSR form and is
+    /// list of variants allowed next to it, each with the connection it belongs to. Adjacency is stored in CSR form and is
     /// symmetric: if B is listed next to A in direction d, A is listed next to B in the opposite direction.
     /// </summary>
     [Serializable]
@@ -101,8 +105,9 @@ namespace Wfc
         /// <summary>Neighbours of variant v in direction d are at [adjacencyStart[v*6+d], adjacencyStart[v*6+d+1]).</summary>
         public int[] adjacencyStart = Array.Empty<int>();
         public int[] adjacencyVariant = Array.Empty<int>();
-        public float[] adjacencyWeight = Array.Empty<float>();
-        public Orbit[] orbits = Array.Empty<Orbit>();
+        /// <summary>For every adjacency entry, the index of its connection in <see cref="connections"/>.</summary>
+        public int[] adjacencyConnection = Array.Empty<int>();
+        public Connection[] connections = Array.Empty<Connection>();
         public RuleDiagnostic[] diagnostics = Array.Empty<RuleDiagnostic>();
 
         public int TileCount => tileIds.Length;
@@ -117,6 +122,9 @@ namespace Wfc
             return (adjacencyStart[slot], adjacencyStart[slot + 1]);
         }
 
+        /// <summary>The weight of adjacency entry <paramref name="entry"/>, i.e. of its connection.</summary>
+        public float GetEntryWeight(int entry) => connections[adjacencyConnection[entry]].weight;
+
         public int FindVariant(int tile, Orientation orientation)
         {
             for (int v = 0; v < variantTile.Length; v++)
@@ -130,14 +138,14 @@ namespace Wfc
         }
     }
 
-    /// <summary>A pair of touching sample instances and the connection (orbit) it produced, or -1.</summary>
+    /// <summary>A pair of touching sample instances and the connection it produced (index into <see cref="RulesetData.connections"/>).</summary>
     public struct ObservedPair
     {
         public int sourceA;
         public int sourceB;
         /// <summary>Direction from A to B in sample space.</summary>
         public Direction direction;
-        public int orbit;
+        public int connection;
     }
 
     public sealed class DerivationResult

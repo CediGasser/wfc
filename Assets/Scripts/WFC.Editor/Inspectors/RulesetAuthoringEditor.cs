@@ -15,8 +15,8 @@ namespace Wfc.Editor
         private SerializedProperty showCells;
         private SerializedProperty showConnections;
         private bool showDiagnostics = true;
-        private bool showOrbits = true;
-        private Vector2 orbitScroll;
+        private bool showConnectionList = true;
+        private Vector2 connectionScroll;
 
         private void OnEnable()
         {
@@ -57,14 +57,14 @@ namespace Wfc.Editor
             DrawActions(root, analysis);
             EditorGUILayout.Space();
             DrawDiagnostics(analysis);
-            DrawOrbits(root, analysis);
+            DrawConnections(root, analysis);
             DrawOrphanedOverrides(root, analysis);
         }
 
         private static void DrawStatus(RulesetAuthoring root, RulesetBaker.Analysis analysis)
         {
             RulesetData data = analysis.Data;
-            EditorGUILayout.LabelField("Samples", $"{analysis.instances.Count} tiles placed, {data.TileCount} tile types, {data.VariantCount} variants, {data.orbits.Length} connections");
+            EditorGUILayout.LabelField("Samples", $"{analysis.instances.Count} tiles placed, {data.TileCount} tile types, {data.VariantCount} variants, {data.connections.Length} connections");
 
             string state;
             MessageType type;
@@ -175,11 +175,11 @@ namespace Wfc.Editor
             EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
-        private void DrawOrbits(RulesetAuthoring root, RulesetBaker.Analysis analysis)
+        private void DrawConnections(RulesetAuthoring root, RulesetBaker.Analysis analysis)
         {
             RulesetData data = analysis.Data;
-            showOrbits = EditorGUILayout.BeginFoldoutHeaderGroup(showOrbits, $"Connections ({data.orbits.Length})");
-            if (showOrbits)
+            showConnectionList = EditorGUILayout.BeginFoldoutHeaderGroup(showConnectionList, $"Connections ({data.connections.Length})");
+            if (showConnectionList)
             {
                 EditorGUILayout.LabelField("Each row is one learned connection, including all its rotated variants. Faces are in each tile's own frame. Set a weight to override it; 0 forbids the connection.", EditorStyles.wordWrappedMiniLabel);
                 using (new EditorGUILayout.HorizontalScope())
@@ -190,37 +190,37 @@ namespace Wfc.Editor
                     GUILayout.Label("Weight", EditorStyles.miniBoldLabel, GUILayout.Width(118));
                     GUILayout.Space(56);
                 }
-                orbitScroll = EditorGUILayout.BeginScrollView(orbitScroll, GUILayout.MaxHeight(320));
-                for (int i = 0; i < data.orbits.Length; i++)
+                connectionScroll = EditorGUILayout.BeginScrollView(connectionScroll, GUILayout.MaxHeight(320));
+                for (int i = 0; i < data.connections.Length; i++)
                 {
-                    Orbit orbit = data.orbits[i];
+                    Connection connection = data.connections[i];
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        GUIContent label = new GUIContent(RulesetEditorUtility.DescribeOrbit(data, orbit), $"{orbit.memberCount} variant pairs\n{orbit.key}");
-                        GUILayout.Label(label, orbit.overridden ? EditorStyles.boldLabel : EditorStyles.label, GUILayout.MinWidth(120));
+                        GUIContent label = new GUIContent(RulesetEditorUtility.DescribeConnection(data, connection), $"{connection.memberCount} variant pairs\n{connection.key}");
+                        GUILayout.Label(label, connection.overridden ? EditorStyles.boldLabel : EditorStyles.label, GUILayout.MinWidth(120));
                         GUILayout.FlexibleSpace();
-                        GUILayout.Label(orbit.observations.ToString(), GUILayout.Width(36));
-                        float weight = EditorGUILayout.DelayedFloatField(orbit.weight, GUILayout.Width(60));
-                        if (!Mathf.Approximately(weight, orbit.weight))
+                        GUILayout.Label(connection.observations.ToString(), GUILayout.Width(36));
+                        float weight = EditorGUILayout.DelayedFloatField(connection.weight, GUILayout.Width(60));
+                        if (!Mathf.Approximately(weight, connection.weight))
                         {
                             Undo.RecordObject(root, "Override Connection Weight");
-                            root.SetOverride(orbit.key, weight);
+                            root.SetOverride(connection.key, weight);
                             EditorUtility.SetDirty(root);
                             RulesetLiveAnalysis.MarkDirty();
                         }
-                        using (new EditorGUI.DisabledScope(!orbit.overridden))
+                        using (new EditorGUI.DisabledScope(!connection.overridden))
                         {
                             if (GUILayout.Button(new GUIContent("Reset", "Remove the override"), EditorStyles.miniButton, GUILayout.Width(54)))
                             {
                                 Undo.RecordObject(root, "Reset Connection Weight");
-                                root.RemoveOverride(orbit.key);
+                                root.RemoveOverride(connection.key);
                                 EditorUtility.SetDirty(root);
                                 RulesetLiveAnalysis.MarkDirty();
                             }
                         }
                         if (GUILayout.Button(new GUIContent("Select", "Select the sample tiles that produced this connection"), EditorStyles.miniButton, GUILayout.Width(52)))
                         {
-                            RulesetEditorUtility.SelectInstances(analysis, RulesetEditorUtility.GetOrbitSources(analysis, i));
+                            RulesetEditorUtility.SelectInstances(analysis, RulesetEditorUtility.GetConnectionSources(analysis, i));
                         }
                     }
                 }
@@ -231,7 +231,7 @@ namespace Wfc.Editor
 
         private static void DrawOrphanedOverrides(RulesetAuthoring root, RulesetBaker.Analysis analysis)
         {
-            var known = analysis.Data.orbits.Select(o => o.key).ToHashSet();
+            var known = analysis.Data.connections.Select(o => o.key).ToHashSet();
             var orphaned = root.Overrides.Where(o => !known.Contains(o.key.Undirected)).ToArray();
             if (orphaned.Length == 0)
             {
