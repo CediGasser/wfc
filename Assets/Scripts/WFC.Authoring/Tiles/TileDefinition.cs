@@ -5,7 +5,7 @@ namespace Wfc.Authoring
 {
     /// <summary>
     /// Everything a tile is, independent of where it's placed: its model, the orientations it may appear in,
-    /// its symmetry and its base weight. Placed copies (<see cref="TileInstance"/>) only reference this asset.
+    /// its symmetry and its base weight. Tile sets list definitions, and chunks refer to them by tile set slot.
     /// </summary>
     [CreateAssetMenu(menuName = "WFC/Tile Definition", fileName = "NewTile", order = 0)]
     public sealed class TileDefinition : ScriptableObject
@@ -37,12 +37,13 @@ namespace Wfc.Authoring
         [SerializeField, HideInInspector] private ulong detectedSymmetryMask = 1;
         [SerializeField, HideInInspector] private string detectedSymmetrySource;
 
-        /// <summary>Raised whenever a definition is edited, so placed instances can refresh their visuals.</summary>
+        /// <summary>Raised whenever a definition is edited, so chunks can refresh their visuals.</summary>
         public static event Action<TileDefinition> Changed;
 
         public GameObject Model => model;
 
-        public bool IsEmpty => model == null;
+        /// <summary>False for invisible tiles such as air.</summary>
+        public bool HasModel => model != null;
 
         public OrientationPreset AllowedPreset => allowedOrientations;
 

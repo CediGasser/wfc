@@ -46,33 +46,37 @@ namespace Wfc.Tests
         }
 
         [Test]
-        public void GridPlacementWritesExactCellsThroughRotatedParents()
+        public void CellToWorldMatchesTheShownTiles()
         {
-            var root = new GameObject("root");
-            var group = new GameObject("group");
+            // Previews are drawn with CellToWorld, tiles are shown with ToRotationScale; both must agree.
+            var chunkObject = new GameObject("chunk");
             var tile = new GameObject("tile");
             try
             {
-                root.transform.SetPositionAndRotation(new Vector3(10, 0, 3), Quaternion.Euler(0, 30, 0));
-                group.transform.SetParent(root.transform, false);
-                group.transform.localPosition = new Vector3(2, 0, 0);
-                group.transform.localRotation = Quaternion.Euler(0, 90, 0);
-                tile.transform.SetParent(group.transform, false);
+                chunkObject.transform.SetPositionAndRotation(new Vector3(10, 0, 3), Quaternion.Euler(0, 30, 0));
+                var chunk = chunkObject.AddComponent<Chunk>();
+                tile.transform.SetParent(chunkObject.transform, false);
 
                 for (int i = 0; i < Orientation.Count; i++)
                 {
-                    var cell = new int3(i % 5 - 2, i % 3, -i % 4);
+                    var cell = new int3(i % 5, i % 3, i % 4);
                     Orientation orientation = Orientation.FromIndex(i);
-                    GridPlacement.Write(tile.transform, root.transform, cell, orientation);
-                    GridPlacement.Placement placement = GridPlacement.Read(tile.transform, root.transform);
-                    Assert.That(placement.Cell, Is.EqualTo(cell));
-                    Assert.That(placement.Orientation, Is.EqualTo(orientation));
-                    Assert.That(placement.IsSnapped, Is.True);
+                    orientation.ToRotationScale(out Quaternion rotation, out Vector3 scale);
+                    tile.transform.localPosition = cell.ToVector3();
+                    tile.transform.localRotation = rotation;
+                    tile.transform.localScale = scale;
+
+                    Matrix4x4 expected = chunk.CellToWorld(cell, orientation);
+                    Matrix4x4 actual = tile.transform.localToWorldMatrix;
+                    for (int entry = 0; entry < 16; entry++)
+                    {
+                        Assert.That(actual[entry], Is.EqualTo(expected[entry]).Within(1e-4f), $"{orientation}, entry {entry}");
+                    }
                 }
             }
             finally
             {
-                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(chunkObject);
             }
         }
     }
