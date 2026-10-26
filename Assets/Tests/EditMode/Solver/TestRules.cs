@@ -6,20 +6,21 @@ using Unity.Mathematics;
 namespace Wfc.Tests.Solver
 {
     /// <summary>
-    /// Builds small rulesets through <see cref="RuleDerivation"/>, the same way the editor does from samples, so solver
+    /// Builds small rulesets through <see cref="SampleRules"/>, the same way the editor does from samples, so solver
     /// tests run on realistic data. Tiles with <see cref="OrientationSet.All"/> allowed and full symmetry have exactly
-    /// one variant, and one sample pair along X teaches the connection along every axis.
+    /// one variant, and one sample pair along X teaches the connection along every axis. Only placed tiles get variants.
     /// </summary>
     internal sealed class TestRules
     {
-        private readonly DerivationInput input = new DerivationInput();
+        private readonly List<TileSpec> tiles = new List<TileSpec>();
+        private readonly SampleBuilder sample = new SampleBuilder();
         private readonly List<(string a, string b, float weight)> overrides = new List<(string, string, float)>();
         private int nextSampleZ;
 
         public int Tile(string name, OrientationSet allowed, OrientationSet symmetry, float baseWeight = 1f)
         {
-            input.tiles.Add(new TileSpec { id = name, name = name, allowed = allowed, symmetry = symmetry, baseWeight = baseWeight });
-            return input.tiles.Count - 1;
+            tiles.Add(new TileSpec { id = name, name = name, allowed = allowed, symmetry = symmetry, baseWeight = baseWeight });
+            return tiles.Count - 1;
         }
 
         /// <summary>A tile with a single variant that may appear in any orientation.</summary>
@@ -27,7 +28,7 @@ namespace Wfc.Tests.Solver
 
         public TestRules Place(int tile, int x, int y, int z, Orientation orientation = default)
         {
-            input.instances.Add(new SampleInstance { tile = tile, cell = new int3(x, y, z), orientation = orientation });
+            sample.Place(tile, new int3(x, y, z), orientation);
             return this;
         }
 
@@ -49,16 +50,16 @@ namespace Wfc.Tests.Solver
 
         public RulesetData Data()
         {
-            input.overrides.Clear();
-            RulesetData derived = RuleDerivation.Derive(input).data;
+            var rules = new SampleRules { sample = sample.Build() };
+            RulesetData derived = rules.Derive(tiles).data;
             foreach (var (a, b, weight) in overrides)
             {
                 Connection connection = derived.connections.Single(o =>
                     (derived.tileNames[o.tileA] == a && derived.tileNames[o.tileB] == b) ||
                     (derived.tileNames[o.tileA] == b && derived.tileNames[o.tileB] == a));
-                input.overrides.Add(new WeightOverride(connection.key, weight));
+                rules.overrides.Add(new WeightOverride(connection.key, weight));
             }
-            return RuleDerivation.Derive(input).data;
+            return rules.Derive(tiles).data;
         }
 
         public CompiledRules Compile() => new CompiledRules(Data());
@@ -128,9 +129,10 @@ namespace Wfc.Tests.Solver
         public static TestRules ManyVariants()
         {
             var rules = new TestRules();
-            rules.Tile("left", OrientationSet.All, OrientationSet.IdentityOnly);
-            rules.Tile("right", OrientationSet.All, OrientationSet.IdentityOnly);
-            return rules;
+            int left = rules.Tile("left", OrientationSet.All, OrientationSet.IdentityOnly);
+            int right = rules.Tile("right", OrientationSet.All, OrientationSet.IdentityOnly);
+            // Placed apart, so they never touch.
+            return rules.Place(left, 0, 0, 0).Place(right, 2, 0, 0);
         }
 
         public static int Variant(RulesetData data, string tileName)
