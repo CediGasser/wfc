@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a3aa47ceaa374f6e8f9260a421ecad0, type: 3}
+  m_Name: PipesTileSet
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileSet
+  tiles:
+  - {fileID: 11400000, guid: ffd2d1f105de840acb274075499d77c1, type: 2}
+  - {fileID: 11400000, guid: 155c39453954746fca38a39dd82bd76c, type: 2}
+  - {fileID: 11400000, guid: f95bc562b083f4d4ba77720bcad1d14d, type: 2}
+  - {fileID: 11400000, guid: 742c625f6e1564b098c31960258681e0, type: 2}
+  - {fileID: 11400000, guid: 00ea550c85fbe4089a587b99c87a05f8, type: 2}
+  - {fileID: 11400000, guid: d067016945efe40d5929447f19f0cea3, type: 2}
+  - {fileID: 11400000, guid: 5aff1f6f4e12b438b8300597885ce850, type: 2}
+  - {fileID: 11400000, guid: 489a040ce9a2e4b7592984bb8d91dee5, type: 2}
+  - {fileID: 11400000, guid: cc6f307407abe4743b2d4223a0008e9a, type: 2}
+  - {fileID: 11400000, guid: 7ace0709012b74d3199c37d6deae2fea, type: 2}
+  - {fileID: 11400000, guid: 00b1130ba31cc4d98be9e54979c0e9a5, type: 2}
+  - {fileID: 11400000, guid: 68ada4162db03402fac601825aa8e858, type: 2}
+  - {fileID: 11400000, guid: b669f5c0f17814bb8aa04aa43eb00b3d, type: 2}
+  - {fileID: 11400000, guid: b68617d0149ff429f90aac00247c28b7, type: 2}
+  - {fileID: 11400000, guid: 965ee29d05ded43a1a6949b015dc51fd, type: 2}
+  - {fileID: 11400000, guid: a17bb4385150d43508c44d069c94bfd9, type: 2}
+  - {fileID: 11400000, guid: f34a32c0ad52f4cb59bf2cc52aa1e207, type: 2}
+  - {fileID: 11400000, guid: 824744308d11d41c1b8e2433eba23200, type: 2}
+  - {fileID: 11400000, guid: fadc60c8fc1a74ecbb582ec8cd0ae94a, type: 2}
