@@ -4,22 +4,27 @@ using System.Linq;
 namespace Wfc
 {
     /// <summary>
-    /// Checks finished rules for problems that make tiles hard or impossible to generate. Works only on the
-    /// derivation output, so it doesn't influence the rules themselves.
+    /// Checks finished rules for problems that make tiles hard or impossible to generate. Works only on the derived
+    /// data, so it doesn't influence the rules themselves, and it works the same for every rule source.
     /// </summary>
     public static class RuleAnalysis
     {
-        public static List<RuleDiagnostic> Diagnose(DerivationInput input, DerivationResult result)
+        /// <param name="cellVariant">
+        /// Variant per sample cell (-1 for empty or ignored cells), used to point diagnostics at the cells of a tile.
+        /// If given, only tiles that appear in it are checked; for sources without samples (null), every tile with
+        /// variants is.
+        /// </param>
+        public static List<RuleDiagnostic> Diagnose(RulesetData data, IReadOnlyList<TileSpec> tiles, int[] cellVariant)
         {
-            RulesetData data = result.data;
             var diagnostics = new List<RuleDiagnostic>();
+            bool hasCells = cellVariant != null;
+            cellVariant ??= System.Array.Empty<int>();
             for (int t = 0; t < data.TileCount; t++)
             {
-                // Instances the derivation skipped have no variant and don't count as samples.
-                int[] sources = Enumerable.Range(0, result.instanceVariant.Length)
-                    .Where(i => result.instanceVariant[i] >= 0 && data.variantTile[result.instanceVariant[i]] == t)
+                int[] cells = Enumerable.Range(0, cellVariant.Length)
+                    .Where(i => cellVariant[i] >= 0 && data.variantTile[cellVariant[i]] == t)
                     .ToArray();
-                if (sources.Length == 0)
+                if (hasCells ? cells.Length == 0 : !data.GetVariants(t).Any())
                 {
                     continue;
                 }
@@ -27,12 +32,8 @@ namespace Wfc
                 bool connected = false;
                 bool selfConnected = false;
                 int deadFaces = 0;
-                for (int v = 0; v < data.VariantCount; v++)
+                foreach (int v in data.GetVariants(t))
                 {
-                    if (data.variantTile[v] != t)
-                    {
-                        continue;
-                    }
                     Orientation inverse = data.GetVariantOrientation(v).Inverse;
                     for (int d = 0; d < Directions.Count; d++)
                     {
@@ -53,13 +54,13 @@ namespace Wfc
                 if (!connected)
                 {
                     diagnostics.Add(new RuleDiagnostic(DiagnosticSeverity.Warning, DiagnosticCode.TileNeverConnected,
-                        $"{name} never touches another tile in the samples, so it can't be generated.", t, sources));
+                        $"Nothing may be placed next to {name}, so it can't be generated.", t, cells));
                     continue;
                 }
-                if (input.tiles[t].isEmpty && !selfConnected)
+                if (tiles[t].isInvisible && !selfConnected)
                 {
                     diagnostics.Add(new RuleDiagnostic(DiagnosticSeverity.Warning, DiagnosticCode.MissingSelfConnection,
-                        $"{name} never touches another {name} in the samples, so two {name} cells can't be neighbours.", t, sources));
+                        $"{name} may never be next to another {name}, so two {name} cells can't be neighbours.", t, cells));
                 }
                 if (deadFaces != 0)
                 {
@@ -67,7 +68,10 @@ namespace Wfc
                         .Where(d => (deadFaces & (1 << d)) != 0)
                         .Select(d => ((Direction)d).ToShortString()));
                     diagnostics.Add(new RuleDiagnostic(DiagnosticSeverity.Warning, DiagnosticCode.DeadEnd,
-                        $"{name}: nothing was learned next to local face(s) {faces} in at least one orientation, so those variants only fit at the edge of the world.", t, sources));
+                        $"{name}: nothing may be placed next to local face(s) {faces} in at least one orientation, so those variants only fit at the edge of the world.", t, cells)
+                    {
+                        faces = deadFaces,
+                    });
                 }
             }
             return diagnostics;

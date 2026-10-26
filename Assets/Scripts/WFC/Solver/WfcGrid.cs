@@ -37,22 +37,33 @@ namespace Wfc
 
         public int CellCount { get; }
 
-        public bool Contains(int3 cell)
-        {
-            return math.all(cell >= 0) && math.all(cell < Size);
-        }
+        public bool Contains(int3 cell) => Contains(Size, cell);
 
         /// <summary>Flat index of a cell. Only defined for cells inside the grid.</summary>
-        public int ToIndex(int3 cell)
+        public int ToIndex(int3 cell) => ToIndex(Size, cell);
+
+        public int3 ToCell(int index) => ToCell(Size, index);
+
+        /// <summary>True if <paramref name="cell"/> lies inside a grid of the given size.</summary>
+        public static bool Contains(int3 size, int3 cell)
         {
-            return cell.x + Size.x * (cell.y + Size.y * cell.z);
+            return math.all(cell >= 0) && math.all(cell < size);
         }
 
-        public int3 ToCell(int index)
+        /// <summary>
+        /// Flat index of a cell in a grid of the given size, x varying fastest. Every box of cells in the project
+        /// (solver grids, <see cref="ChunkData"/>) uses this layout, so the same index means the same cell.
+        /// </summary>
+        public static int ToIndex(int3 size, int3 cell)
         {
-            int x = index % Size.x;
-            int rest = index / Size.x;
-            return new int3(x, rest % Size.y, rest / Size.y);
+            return cell.x + size.x * (cell.y + size.y * cell.z);
+        }
+
+        public static int3 ToCell(int3 size, int index)
+        {
+            int x = index % size.x;
+            int rest = index / size.x;
+            return new int3(x, rest % size.y, rest / size.y);
         }
 
         /// <summary>Index of the neighbouring cell in <paramref name="direction"/>, or -1 if it's outside the grid.</summary>

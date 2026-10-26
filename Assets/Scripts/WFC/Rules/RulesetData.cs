@@ -1,78 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Unity.Mathematics;
 
 namespace Wfc
 {
-    public enum WeightSource
-    {
-        /// <summary>Every connection that appears in a sample has weight 1.</summary>
-        Presence,
-        /// <summary>A connection's weight is how often it appears in the samples.</summary>
-        Frequency,
-    }
-
-    /// <summary>One tile as seen by rule derivation.</summary>
-    public struct TileSpec
-    {
-        /// <summary>Stable id (the definition asset's GUID), used for override keys.</summary>
-        public string id;
-        public string name;
-        public OrientationSet allowed;
-        /// <summary>Geometric symmetry of the model. Only the part inside <see cref="allowed"/> is used.</summary>
-        public OrientationSet symmetry;
-        public float baseWeight;
-        /// <summary>Invisible tiles such as air. Used for diagnostics only.</summary>
-        public bool isEmpty;
-    }
-
-    /// <summary>One placed tile in a sample. Its index in the input list is its source id.</summary>
-    public struct SampleInstance
-    {
-        public int tile;
-        public int3 cell;
-        public Orientation orientation;
-    }
-
-    public sealed class DerivationInput
-    {
-        public readonly List<TileSpec> tiles = new List<TileSpec>();
-        public readonly List<SampleInstance> instances = new List<SampleInstance>();
-        public readonly List<WeightOverride> overrides = new List<WeightOverride>();
-        public WeightSource weightSource = WeightSource.Frequency;
-
-        /// <summary>Stable hash of everything that influences the result, used to detect outdated bakes.</summary>
-        public string ComputeHash()
-        {
-            ulong hash = 14695981039346656037UL;
-            void Add(string value)
-            {
-                foreach (char c in value ?? string.Empty)
-                {
-                    hash = (hash ^ c) * 1099511628211UL;
-                }
-                hash = (hash ^ 0xff) * 1099511628211UL;
-            }
-            Add(((int)weightSource).ToString());
-            foreach (TileSpec tile in tiles)
-            {
-                Add($"{tile.id}|{tile.allowed.Mask}|{tile.symmetry.Mask}|{tile.baseWeight:R}|{tile.isEmpty}");
-            }
-            foreach (SampleInstance instance in instances)
-            {
-                Add($"{instance.tile}|{instance.cell.x},{instance.cell.y},{instance.cell.z}|{instance.orientation.Index}");
-            }
-            foreach (WeightOverride weightOverride in overrides)
-            {
-                Add($"{weightOverride.key}|{weightOverride.weight:R}");
-            }
-            return hash.ToString("x16");
-        }
-    }
-
     /// <summary>
-    /// One learned connection: an observed pair plus every variant pair it expands into under the allowed
-    /// orientations. All of those pairs share the connection's weight.
+    /// One connection: an allowed pair plus every variant pair it expands into under the orientations both tiles
+    /// allow. All of those pairs share the connection's weight.
     /// </summary>
     [Serializable]
     public struct Connection
@@ -80,9 +13,9 @@ namespace Wfc
         public ConnectionKey key;
         public int tileA;
         public int tileB;
-        /// <summary>How many observed sample pairs produced this connection.</summary>
+        /// <summary>How many sample pairs produced this connection; 0 for rules that don't come from samples.</summary>
         public int observations;
-        /// <summary>Weight from the <see cref="WeightSource"/>, or the override. 0 means the connection is forbidden.</summary>
+        /// <summary>Weight from the observations (or 1), or the override. 0 means the connection is forbidden.</summary>
         public float weight;
         public bool overridden;
         /// <summary>Number of distinct variant pairs the connection expands into.</summary>
@@ -108,6 +41,11 @@ namespace Wfc
         /// <summary>For every adjacency entry, the index of its connection in <see cref="connections"/>.</summary>
         public int[] adjacencyConnection = Array.Empty<int>();
         public Connection[] connections = Array.Empty<Connection>();
+        /// <summary>
+        /// Per tile * <see cref="Orientation.Count"/> + orientation index: the variant that shows the tile in that
+        /// orientation (any orientation of the variant's coset), or -1 if the orientation isn't allowed.
+        /// </summary>
+        public int[] orientationVariant = Array.Empty<int>();
         public RuleDiagnostic[] diagnostics = Array.Empty<RuleDiagnostic>();
 
         public int TileCount => tileIds.Length;
@@ -125,8 +63,22 @@ namespace Wfc
         /// <summary>The weight of adjacency entry <paramref name="entry"/>, i.e. of its connection.</summary>
         public float GetEntryWeight(int entry) => connections[adjacencyConnection[entry]].weight;
 
+        /// <summary>
+        /// The variant that shows <paramref name="tile"/> in <paramref name="orientation"/>, which may be any orientation
+        /// that looks like the variant's. -1 if the tile has no variants or doesn't allow the orientation.
+        /// </summary>
         public int FindVariant(int tile, Orientation orientation)
         {
+            if (tile < 0 || tile >= TileCount)
+            {
+                return -1;
+            }
+            int slot = tile * Orientation.Count + orientation.Index;
+            if (slot < orientationVariant.Length)
+            {
+                return orientationVariant[slot];
+            }
+            // Rules baked before the orientation table existed: only the representative orientation is known.
             for (int v = 0; v < variantTile.Length; v++)
             {
                 if (variantTile[v] == tile && variantOrientation[v] == orientation.Index)
@@ -136,24 +88,50 @@ namespace Wfc
             }
             return -1;
         }
-    }
 
-    /// <summary>A pair of touching sample instances and the connection it produced (index into <see cref="RulesetData.connections"/>).</summary>
-    public struct ObservedPair
-    {
-        public int sourceA;
-        public int sourceB;
-        /// <summary>Direction from A to B in sample space.</summary>
-        public Direction direction;
-        public int connection;
-    }
+        /// <summary>Every variant of a tile, in ascending order.</summary>
+        public IEnumerable<int> GetVariants(int tile)
+        {
+            for (int v = 0; v < variantTile.Length; v++)
+            {
+                if (variantTile[v] == tile)
+                {
+                    yield return v;
+                }
+            }
+        }
 
-    public sealed class DerivationResult
-    {
-        public RulesetData data;
-        public List<ObservedPair> pairs = new List<ObservedPair>();
-        /// <summary>Variant index per source instance, or -1 if the instance was skipped.</summary>
-        public int[] instanceVariant = Array.Empty<int>();
-        public string inputHash;
+        /// <summary>For example "floor +Y ↔ scaffolding -Y": the touching faces of both tiles, each in its tile's own frame.</summary>
+        public string DescribeConnection(Connection connection)
+        {
+            Direction direction = connection.key.Direction;
+            Direction faceA = Orientation.FromIndex(connection.key.orientationA).Inverse.Apply(direction);
+            Direction faceB = Orientation.FromIndex(connection.key.orientationB).Inverse.Apply(direction.Opposite());
+            return $"{tileNames[connection.tileA]} {faceA.ToShortString()}  ↔  {tileNames[connection.tileB]} {faceB.ToShortString()}";
+        }
+
+        /// <summary>
+        /// A copy with other connection weights (one per connection, in order). The adjacency is shared with this
+        /// ruleset, so a weight may not change between 0 (forbidden, left out of the adjacency) and positive.
+        /// </summary>
+        /// <exception cref="ArgumentException">If the count doesn't match or a weight crosses 0.</exception>
+        public RulesetData WithConnectionWeights(IReadOnlyList<float> weights)
+        {
+            if (weights.Count != connections.Length)
+            {
+                throw new ArgumentException($"Expected {connections.Length} weights, got {weights.Count}.", nameof(weights));
+            }
+            var copy = (RulesetData)MemberwiseClone();
+            copy.connections = (Connection[])connections.Clone();
+            for (int c = 0; c < connections.Length; c++)
+            {
+                if (weights[c] > 0f != connections[c].weight > 0f)
+                {
+                    throw new ArgumentException($"The weight of connection {c} can't change between 0 and positive.", nameof(weights));
+                }
+                copy.connections[c].weight = weights[c];
+            }
+            return copy;
+        }
     }
 }
