@@ -151,7 +151,7 @@ namespace Wfc.Editor
                 return points;
             }
 
-            // The model root has no parent here, so localToWorldMatrix is exactly the tile-space transform a TileInstance uses.
+            // The model root has no parent here, so localToWorldMatrix is exactly the tile-space transform a placed tile uses.
             Matrix4x4 rootToTile = model.transform.parent == null ? Matrix4x4.identity : model.transform.parent.worldToLocalMatrix;
             using (Mesh.MeshDataArray dataArray = Mesh.AcquireReadOnlyMeshData(meshes))
             {

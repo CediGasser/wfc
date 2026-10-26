@@ -1,134 +1,61 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using Wfc.Authoring;
 
 namespace Wfc.Editor
 {
-    /// <summary>
-    /// Turns the samples under a <see cref="RulesetAuthoring"/> root into a derivation input, derives the rules and
-    /// writes them into the root's <see cref="Ruleset"/> asset.
-    /// </summary>
+    /// <summary>Derives the rules of a <see cref="RuleSource"/> and writes them into its <see cref="Ruleset"/> asset.</summary>
     public static class RulesetBaker
     {
-        public sealed class Analysis
+        public static RuleSourceAnalysis Analyze(RuleSource source, bool detectSymmetry = true)
         {
-            public RulesetAuthoring root;
-            public DerivationInput input;
-            public DerivationResult result;
-            /// <summary>Tile definitions in tile-index order.</summary>
-            public List<TileDefinition> tiles = new List<TileDefinition>();
-            /// <summary>Instances in source-id order (the index used by diagnostics and observed pairs).</summary>
-            public List<TileInstance> instances = new List<TileInstance>();
-            /// <summary>Instances without a definition; they take no part in derivation.</summary>
-            public List<TileInstance> unassigned = new List<TileInstance>();
-
-            public RulesetData Data => result.data;
-
-            public string InputHash => result.inputHash;
-
-            public bool IsBakedAssetUpToDate => root.Target != null && root.Target.SourceHash == InputHash;
-        }
-
-        public static Analysis Analyze(RulesetAuthoring root, bool detectSymmetry = true)
-        {
-            var analysis = new Analysis { root = root, input = new DerivationInput() };
-            var extraDiagnostics = new List<RuleDiagnostic>();
-            var tileIndex = new Dictionary<TileDefinition, int>();
-
-            TileInstance[] all = root.GetComponentsInChildren<TileInstance>(false);
-            foreach (TileDefinition definition in all.Select(i => i.Definition).Where(d => d != null).Distinct()
-                         .OrderBy(d => AssetDatabase.GetAssetPath(d)).ThenBy(d => d.name))
+            TileSet tileSet = source.TileSet;
+            var analysis = new RuleSourceAnalysis
             {
-                if (detectSymmetry)
-                {
-                    MeshSymmetryDetector.UpdateDefinition(definition);
-                }
-                tileIndex.Add(definition, analysis.tiles.Count);
-                analysis.tiles.Add(definition);
-                analysis.input.tiles.Add(new TileSpec
-                {
-                    id = GetStableId(definition),
-                    name = definition.name,
-                    allowed = definition.AllowedOrientations,
-                    symmetry = definition.EffectiveSymmetry,
-                    baseWeight = definition.BaseWeight,
-                    isEmpty = definition.IsEmpty,
-                });
-            }
-
-            foreach (TileInstance instance in all)
+                source = source,
+                tileSet = tileSet,
+                specs = TileSpecs.From(tileSet, detectSymmetry),
+                sampleSize = source is SampleRuleSource sample && sample.Chunk != null ? sample.Chunk.Size : int3.zero,
+            };
+            analysis.result = source.CreateRules().Derive(analysis.specs);
+            if (tileSet == null)
             {
-                if (instance.Definition == null)
-                {
-                    analysis.unassigned.Add(instance);
-                    continue;
-                }
-                GridPlacement.Placement placement = GridPlacement.Read(instance.transform, root.transform);
-                int sourceId = analysis.instances.Count;
-                analysis.instances.Add(instance);
-                analysis.input.instances.Add(new SampleInstance
-                {
-                    tile = tileIndex[instance.Definition],
-                    cell = placement.Cell,
-                    orientation = placement.Orientation,
-                });
-                if (!placement.IsSnapped)
-                {
-                    extraDiagnostics.Add(new RuleDiagnostic(DiagnosticSeverity.Warning, DiagnosticCode.UnsnappedInstance,
-                        $"{instance.name} isn't aligned to the grid. It's treated as cell {placement.Cell}, orientation {placement.Orientation}.",
-                        tileIndex[instance.Definition], sourceId));
-                }
+                analysis.result.data.diagnostics = analysis.result.data.diagnostics.Prepend(new RuleDiagnostic(DiagnosticSeverity.Error,
+                    DiagnosticCode.MissingTile, "No tile set is assigned, so there are no tiles to derive rules for.")).ToArray();
             }
-            if (analysis.unassigned.Count > 0)
-            {
-                extraDiagnostics.Add(new RuleDiagnostic(DiagnosticSeverity.Warning, DiagnosticCode.MissingDefinition,
-                    $"{analysis.unassigned.Count} tile instance(s) have no definition and are ignored: {string.Join(", ", analysis.unassigned.Select(i => i.name))}."));
-            }
-
-            analysis.input.weightSource = root.WeightSource;
-            analysis.input.overrides.AddRange(root.Overrides);
-            analysis.result = RuleDerivation.Derive(analysis.input);
-            analysis.result.data.diagnostics = extraDiagnostics.Concat(analysis.result.data.diagnostics).ToArray();
             return analysis;
         }
 
-        /// <summary>Derives the rules and writes them into the root's ruleset asset, creating it next to the scene if needed.</summary>
-        public static Ruleset Bake(RulesetAuthoring root)
+        /// <summary>Derives the rules and writes them into the source's ruleset asset, creating it next to the scene if needed.</summary>
+        public static Ruleset Bake(RuleSource source)
         {
-            Analysis analysis = Analyze(root);
-            Ruleset asset = root.Target;
+            RuleSourceAnalysis analysis = Analyze(source);
+            Ruleset asset = source.Ruleset;
             if (asset == null)
             {
                 asset = ScriptableObject.CreateInstance<Ruleset>();
-                AssetDatabase.CreateAsset(asset, GetDefaultAssetPath(root));
-                Undo.RecordObject(root, "Bake WFC Ruleset");
-                root.Target = asset;
-                EditorUtility.SetDirty(root);
+                AssetDatabase.CreateAsset(asset, GetDefaultAssetPath(source));
+                Undo.RecordObject(source, "Bake WFC Ruleset");
+                source.Ruleset = asset;
+                EditorUtility.SetDirty(source);
             }
 
             Undo.RecordObject(asset, "Bake WFC Ruleset");
-            asset.Set(analysis.tiles.ToArray(), analysis.Data, analysis.InputHash);
+            asset.Set(analysis.tileSet, analysis.Data, analysis.InputHash);
             EditorUtility.SetDirty(asset);
             AssetDatabase.SaveAssetIfDirty(asset);
-            RulesetLiveAnalysis.MarkDirty();
+            LiveRuleAnalysis.MarkDirty();
             return asset;
         }
 
-        /// <summary>The definition's asset GUID, or its name for definitions that aren't saved as assets (tests).</summary>
-        public static string GetStableId(TileDefinition definition)
+        private static string GetDefaultAssetPath(RuleSource source)
         {
-            string path = AssetDatabase.GetAssetPath(definition);
-            return string.IsNullOrEmpty(path) ? $"unsaved:{definition.name}" : AssetDatabase.AssetPathToGUID(path);
-        }
-
-        private static string GetDefaultAssetPath(RulesetAuthoring root)
-        {
-            string scenePath = root.gameObject.scene.path;
+            string scenePath = source.gameObject.scene.path;
             string folder = string.IsNullOrEmpty(scenePath) ? "Assets" : Path.GetDirectoryName(scenePath)?.Replace('\\', '/');
-            return AssetDatabase.GenerateUniqueAssetPath($"{folder}/{root.gameObject.name}.asset");
+            return AssetDatabase.GenerateUniqueAssetPath($"{folder}/{source.gameObject.name}.asset");
         }
     }
 }

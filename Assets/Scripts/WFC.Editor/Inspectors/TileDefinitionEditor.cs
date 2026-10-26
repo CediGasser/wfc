@@ -93,7 +93,7 @@ namespace Wfc.Editor
             {
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    EditorGUILayout.HelpBox("These orientations aren't closed under combination (or lack the identity). Rule derivation will extend them.", MessageType.Warning);
+                    EditorGUILayout.HelpBox("These orientations aren't closed under combination (or lack the identity), so rule derivation ignores this tile. Close adds the missing ones.", MessageType.Warning);
                     if (GUILayout.Button("Close", GUILayout.Width(60), GUILayout.Height(38)))
                     {
                         customOrientationMask.ulongValue = set.Closure().Mask;
@@ -114,9 +114,8 @@ namespace Wfc.Editor
 
         private static void DrawSymmetryInfo(TileDefinition definition)
         {
-            OrientationSet allowed = definition.AllowedOrientations.Closure();
-            OrientationSet effective = definition.EffectiveSymmetry.Intersect(allowed).Closure();
-            int variants = allowed.Count / Mathf.Max(1, effective.Count);
+            OrientationSet allowed = definition.AllowedOrientations;
+            int variants = VariantViewerWindow.GetVariants(definition).Count;
 
             EditorGUILayout.LabelField("Symmetry", EditorStyles.boldLabel);
             if (definition.Model != null)

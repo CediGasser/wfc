@@ -9,13 +9,13 @@ using Wfc.Authoring;
 namespace Wfc.Editor
 {
     /// <summary>
-    /// Calibrates the connection weights of a ruleset root so generated grids contain each learned connection about as
-    /// often as the samples do. Every iteration generates a batch of grids with the generator's boundaries, compares
-    /// the connection shares with the sample's observation shares and adjusts the weights
-    /// (<see cref="ConnectionStatistics.UpdateWeights"/>). A connection weight enters a collapse once per decided
-    /// neighbour, so full steps overshoot: when an iteration is worse than the best one so far, the next step starts
-    /// from the best weights again with half the step size. Runs one attempt per editor update, so the editor stays
-    /// usable. The best iteration can be applied as weight overrides on the root.
+    /// Calibrates the connection weights of a rule source so generated grids contain each connection about as often as
+    /// the source observed it (so far only samples count observations). Every iteration generates a batch of grids
+    /// with the generator's boundaries, compares the connection shares with the observation shares and adjusts the
+    /// weights (<see cref="ConnectionStatistics.UpdateWeights"/>). A connection weight enters a collapse once per
+    /// decided neighbour, so full steps overshoot: when an iteration is worse than the best one so far, the next step
+    /// starts from the best weights again with half the step size. Runs one attempt per editor update, so the editor
+    /// stays usable. The best iteration can be applied as weight overrides on the source.
     /// </summary>
     public sealed class WeightCalibrator
     {
@@ -46,9 +46,9 @@ namespace Wfc.Editor
         }
 
         private readonly WfcGenerator generator;
-        private readonly RulesetAuthoring root;
+        private readonly RuleSource source;
         private readonly Settings settings;
-        private readonly RulesetBaker.Analysis analysis;
+        private readonly RuleSourceAnalysis analysis;
         private readonly double[] targetConnections;
         private readonly long[] sampleTiles;
         private readonly bool[] excludedConnections;
@@ -63,12 +63,17 @@ namespace Wfc.Editor
         private Iteration current;
         private int generationAttempts;
 
-        public WeightCalibrator(WfcGenerator generator, RulesetAuthoring root, Settings settings)
+        /// <exception cref="System.ArgumentException">If the source doesn't count observations.</exception>
+        public WeightCalibrator(WfcGenerator generator, RuleSource source, Settings settings)
         {
+            if (!source.HasObservations)
+            {
+                throw new ArgumentException($"{source.name} doesn't observe connections, so there's nothing to calibrate towards.", nameof(source));
+            }
             this.generator = generator;
-            this.root = root;
+            this.source = source;
             this.settings = settings;
-            analysis = RulesetBaker.Analyze(root, detectSymmetry: false);
+            analysis = RulesetBaker.Analyze(source, detectSymmetry: false);
             Connection[] connections = analysis.Data.connections;
             weights = connections.Select(c => c.weight).ToArray();
 
@@ -76,9 +81,9 @@ namespace Wfc.Editor
             excludedConnections = connections.Select(c => c.weight <= 0).ToArray();
             targetConnections = ConnectionStatistics.Shares(connections.Select(c => (long)c.observations).ToArray(), excludedConnections);
             sampleTiles = new long[analysis.Data.TileCount];
-            for (int i = 0; i < analysis.result.instanceVariant.Length; i++)
+            for (int i = 0; i < analysis.result.cellVariant.Length; i++)
             {
-                int variant = analysis.result.instanceVariant[i];
+                int variant = analysis.result.cellVariant[i];
                 if (variant >= 0)
                 {
                     sampleTiles[analysis.Data.variantTile[variant]]++;
@@ -102,7 +107,7 @@ namespace Wfc.Editor
         public string Progress => current == null ? (IsRunning ? "Starting…" : "Idle")
             : $"Iteration {Iterations.Count + 1}/{settings.iterations}: generation {current.generations + 1}/{settings.generationsPerIteration}, {current.done} done, {current.attempts} attempts";
 
-        public RulesetAuthoring Root => root;
+        public RuleSource Source => source;
 
         /// <summary>Raised after every attempt and when the calibration ends.</summary>
         public event Action Changed;
@@ -123,7 +128,7 @@ namespace Wfc.Editor
             Stop();
         }
 
-        /// <summary>Writes the best iteration's weights as overrides on the root and bakes it.</summary>
+        /// <summary>Writes the best iteration's weights as overrides on the source and bakes it.</summary>
         public void Apply()
         {
             Iteration best = Best;
@@ -131,31 +136,25 @@ namespace Wfc.Editor
             {
                 return;
             }
-            Undo.RecordObject(root, "Apply Calibrated Connection Weights");
+            Undo.RecordObject(source, "Apply Calibrated Connection Weights");
             Connection[] connections = analysis.Data.connections;
             for (int c = 0; c < connections.Length; c++)
             {
                 if (!excludedConnections[c])
                 {
-                    root.SetOverride(connections[c].key, best.weights[c]);
+                    source.SetOverride(connections[c].key, best.weights[c]);
                 }
             }
-            EditorUtility.SetDirty(root);
-            RulesetBaker.Bake(root);
+            EditorUtility.SetDirty(source);
+            RulesetBaker.Bake(source);
         }
 
         private void BeginIteration()
         {
-            // Rules derived from the samples with the current weights as overrides, exactly as a bake would.
-            var input = new DerivationInput { weightSource = analysis.input.weightSource };
-            input.tiles.AddRange(analysis.input.tiles);
-            input.instances.AddRange(analysis.input.instances);
+            // The derived rules with the current weights, as a bake with these weights as overrides would produce them:
+            // weights never change between 0 and positive, so the adjacency stays the same.
             Connection[] connections = analysis.Data.connections;
-            for (int c = 0; c < connections.Length; c++)
-            {
-                input.overrides.Add(new WeightOverride(connections[c].key, weights[c]));
-            }
-            rules = new CompiledRules(RuleDerivation.Derive(input).data);
+            rules = new CompiledRules(analysis.Data.WithConnectionWeights(weights));
             connectionCounts = new long[connections.Length];
             tileCounts = new long[analysis.Data.TileCount];
             current = new Iteration { weights = (float[])weights.Clone(), alpha = Iterations.Count == 0 ? 0 : alpha };
@@ -187,7 +186,7 @@ namespace Wfc.Editor
                 uint seed = math.max(1u, settings.seed + (uint)Iterations.Count * 100003u + (uint)current.generations * 7919u);
                 var size = new int3(math.max(1, settings.size.x), math.max(1, settings.size.y), math.max(1, settings.size.z));
                 // Weights don't change the variants, so the analysed data describes them for the boundaries.
-                solver = generator.CreateSolver(rules, analysis.Data, analysis.tiles, size, seed);
+                solver = generator.CreateSolver(rules, analysis.Data, analysis.tileSet, size, seed);
                 generationAttempts = 0;
             }
             else
@@ -255,7 +254,7 @@ namespace Wfc.Editor
         private void ExcludeImpossibleTiles()
         {
             var size = new int3(math.max(1, settings.size.x), math.max(1, settings.size.y), math.max(1, settings.size.z));
-            var probe = generator.CreateSolver(new CompiledRules(analysis.Data), analysis.Data, analysis.tiles, size, 1);
+            var probe = generator.CreateSolver(new CompiledRules(analysis.Data), analysis.Data, analysis.tileSet, size, 1);
             probe.PropagateInitially();
             var possible = new bool[analysis.Data.TileCount];
             for (int cell = 0; cell < probe.Grid.CellCount; cell++)

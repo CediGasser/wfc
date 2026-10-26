@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -5,62 +6,69 @@ using Wfc.Authoring;
 
 namespace Wfc.Editor
 {
-    /// <summary>Tile × tile overview of the learned connections of a ruleset root. Click a cell to list its connections.</summary>
+    /// <summary>Tile × tile overview of the connections of a rule source. Click a cell to list its connections.</summary>
     public sealed class ConnectionMatrixWindow : EditorWindow
     {
         private const float Cell = 28f;
         private const float HeaderWidth = 110f;
 
-        [SerializeField] private RulesetAuthoring root;
+        [SerializeField] private RuleSource source;
         private int selectedA = -1;
         private int selectedB = -1;
         private Vector2 scroll;
         private Vector2 listScroll;
 
         [MenuItem("Window/WFC/Connection Matrix")]
-        public static void Open() => Open(Selection.activeGameObject != null ? Selection.activeGameObject.GetComponentInParent<RulesetAuthoring>() : null);
+        public static void Open() => Open(Selection.activeGameObject != null ? Selection.activeGameObject.GetComponentInParent<RuleSource>() : null);
 
-        public static void Open(RulesetAuthoring root)
+        public static void Open(RuleSource source)
         {
             var window = GetWindow<ConnectionMatrixWindow>("WFC Connections");
-            if (root != null)
+            if (source != null)
             {
-                window.root = root;
+                window.source = source;
             }
         }
 
-        private void OnEnable() => RulesetLiveAnalysis.Updated += Repaint;
+        private void OnEnable() => LiveRuleAnalysis.Updated += Repaint;
 
-        private void OnDisable() => RulesetLiveAnalysis.Updated -= Repaint;
+        private void OnDisable() => LiveRuleAnalysis.Updated -= Repaint;
 
         private void OnGUI()
         {
-            root = (RulesetAuthoring)EditorGUILayout.ObjectField("Ruleset Root", root, typeof(RulesetAuthoring), true);
-            if (root == null)
+            source = (RuleSource)EditorGUILayout.ObjectField("Rule Source", source, typeof(RuleSource), true);
+            if (source == null)
             {
-                root = FindObjectsByType<RulesetAuthoring>(FindObjectsInactive.Exclude).FirstOrDefault();
-                if (root == null)
+                source = FindObjectsByType<RuleSource>(FindObjectsInactive.Exclude).FirstOrDefault();
+                if (source == null)
                 {
-                    EditorGUILayout.HelpBox("No ruleset root in the open scenes.", MessageType.Info);
+                    EditorGUILayout.HelpBox("No rule source in the open scenes.", MessageType.Info);
                     return;
                 }
             }
 
-            RulesetBaker.Analysis analysis = RulesetLiveAnalysis.Get(root);
+            RuleSourceAnalysis analysis = LiveRuleAnalysis.Get(source);
             RulesetData data = analysis.Data;
-            int n = data.TileCount;
+            // Only tiles that take part; a tile set may hold tiles the source doesn't use.
+            int[] tiles = Enumerable.Range(0, data.TileCount).Where(t => data.GetVariants(t).Any()).ToArray();
+            int n = tiles.Length;
+            var row = new Dictionary<int, int>();
+            for (int i = 0; i < n; i++)
+            {
+                row[tiles[i]] = i;
+            }
             var counts = new int[n, n];
             foreach (Connection connection in data.connections.Where(o => o.weight > 0f))
             {
-                counts[connection.tileA, connection.tileB]++;
+                counts[row[connection.tileA], row[connection.tileB]]++;
                 if (connection.tileA != connection.tileB)
                 {
-                    counts[connection.tileB, connection.tileA]++;
+                    counts[row[connection.tileB], row[connection.tileA]]++;
                 }
             }
             int max = Mathf.Max(1, counts.Cast<int>().DefaultIfEmpty(0).Max());
 
-            EditorGUILayout.LabelField("Number of learned connections between two tiles (any faces, any orientations). Red rows can't connect to anything.", EditorStyles.wordWrappedMiniLabel);
+            EditorGUILayout.LabelField("Number of connections between two tiles (any faces, any orientations). Red rows can't connect to anything.", EditorStyles.wordWrappedMiniLabel);
             scroll = EditorGUILayout.BeginScrollView(scroll, GUILayout.Height(Mathf.Min(position.height * 0.6f, HeaderWidth + n * Cell + 20f)));
             Rect area = GUILayoutUtility.GetRect(HeaderWidth + n * Cell, HeaderWidth + n * Cell);
             for (int b = 0; b < n; b++)
@@ -68,7 +76,7 @@ namespace Wfc.Editor
                 var labelRect = new Rect(area.x + HeaderWidth + b * Cell, area.y, Cell, HeaderWidth - 4f);
                 Matrix4x4 previous = GUI.matrix;
                 GUIUtility.RotateAroundPivot(-90f, new Vector2(labelRect.x + Cell * 0.5f, labelRect.yMax));
-                GUI.Label(new Rect(labelRect.x + Cell * 0.5f, labelRect.yMax - 9f, HeaderWidth - 4f, 18f), data.tileNames[b], EditorStyles.miniLabel);
+                GUI.Label(new Rect(labelRect.x + Cell * 0.5f, labelRect.yMax - 9f, HeaderWidth - 4f, 18f), data.tileNames[tiles[b]], EditorStyles.miniLabel);
                 GUI.matrix = previous;
             }
             for (int a = 0; a < n; a++)
@@ -80,7 +88,7 @@ namespace Wfc.Editor
                 {
                     GUI.contentColor = new Color(1f, 0.45f, 0.45f);
                 }
-                GUI.Label(rowLabel, data.tileNames[a], EditorStyles.miniLabel);
+                GUI.Label(rowLabel, data.tileNames[tiles[a]], EditorStyles.miniLabel);
                 GUI.contentColor = previousColor;
 
                 for (int b = 0; b < n; b++)
@@ -88,7 +96,7 @@ namespace Wfc.Editor
                     var rect = new Rect(area.x + HeaderWidth + b * Cell, area.y + HeaderWidth + a * Cell, Cell - 2f, Cell - 2f);
                     float t = counts[a, b] / (float)max;
                     Color color = counts[a, b] == 0 ? new Color(0.25f, 0.25f, 0.25f) : Color.Lerp(new Color(0.2f, 0.4f, 0.25f), new Color(0.3f, 0.95f, 0.4f), t);
-                    if (a == selectedA && b == selectedB)
+                    if (tiles[a] == selectedA && tiles[b] == selectedB)
                     {
                         EditorGUI.DrawRect(new Rect(rect.x - 2f, rect.y - 2f, rect.width + 4f, rect.height + 4f), Color.white);
                     }
@@ -99,8 +107,8 @@ namespace Wfc.Editor
                     }
                     if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition))
                     {
-                        selectedA = a;
-                        selectedB = b;
+                        selectedA = tiles[a];
+                        selectedB = tiles[b];
                         Event.current.Use();
                         Repaint();
                     }
@@ -111,7 +119,7 @@ namespace Wfc.Editor
             DrawSelection(analysis);
         }
 
-        private void DrawSelection(RulesetBaker.Analysis analysis)
+        private void DrawSelection(RuleSourceAnalysis analysis)
         {
             RulesetData data = analysis.Data;
             if (selectedA < 0 || selectedB < 0 || selectedA >= data.TileCount || selectedB >= data.TileCount)
@@ -131,10 +139,14 @@ namespace Wfc.Editor
                 }
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    EditorGUILayout.LabelField(RulesetEditorUtility.DescribeConnection(data, connection), $"seen {connection.observations}×, weight {connection.weight:0.##}{(connection.overridden ? " (override)" : "")}");
-                    if (GUILayout.Button("Select", EditorStyles.miniButton, GUILayout.Width(52)))
+                    string seen = analysis.source.HasObservations ? $"seen {connection.observations}×, " : "";
+                    EditorGUILayout.LabelField(data.DescribeConnection(connection), $"{seen}weight {connection.weight:0.##}{(connection.overridden ? " (override)" : "")}");
+                    using (new EditorGUI.DisabledScope(!analysis.MatchesChunk(analysis.Chunk) || analysis.result.pairs.Count == 0))
                     {
-                        RulesetEditorUtility.SelectInstances(analysis, RulesetEditorUtility.GetConnectionSources(analysis, i));
+                        if (GUILayout.Button("Select", EditorStyles.miniButton, GUILayout.Width(52)))
+                        {
+                            ChunkEditing.SelectCells(analysis.Chunk, analysis.GetConnectionCells(i));
+                        }
                     }
                 }
             }

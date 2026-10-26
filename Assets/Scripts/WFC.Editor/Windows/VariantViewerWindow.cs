@@ -30,25 +30,19 @@ namespace Wfc.Editor
             }
         }
 
-        /// <summary>The representative orientation of every variant, as rule derivation computes them.</summary>
+        /// <summary>
+        /// The representative orientation of every variant, as rule derivation computes them. Empty if the allowed
+        /// orientations aren't a group, since derivation ignores such tiles.
+        /// </summary>
         public static List<Orientation> GetVariants(TileDefinition definition)
         {
-            OrientationSet allowed = definition.AllowedOrientations.Closure();
-            OrientationSet effective = definition.EffectiveSymmetry.Intersect(allowed).Closure();
-            var variants = new List<Orientation>();
-            foreach (Orientation g in allowed)
+            OrientationSet allowed = definition.AllowedOrientations;
+            if (!allowed.IsGroup)
             {
-                int representative = g.Index;
-                foreach (Orientation s in effective)
-                {
-                    representative = Mathf.Min(representative, (g * s).Index);
-                }
-                if (representative == g.Index)
-                {
-                    variants.Add(g);
-                }
+                return new List<Orientation>();
             }
-            return variants;
+            OrientationSet effective = definition.EffectiveSymmetry.With(Orientation.Identity).Closure().Intersect(allowed);
+            return VariantTable.Representatives(allowed, effective);
         }
 
         private void OnEnable() => TileDefinition.Changed += OnDefinitionChanged;
@@ -85,7 +79,12 @@ namespace Wfc.Editor
             }
             MeshSymmetryDetector.UpdateDefinition(definition);
             List<Orientation> variants = GetVariants(definition);
-            EditorGUILayout.LabelField($"{variants.Count} distinct variants of {definition.AllowedOrientations.Closure().Count} allowed orientations. Axes: red X, green Y, blue Z.", EditorStyles.wordWrappedMiniLabel);
+            if (!definition.AllowedOrientations.IsGroup)
+            {
+                EditorGUILayout.HelpBox("The allowed orientations aren't closed under combination, so rule derivation ignores this tile.", MessageType.Warning);
+                return;
+            }
+            EditorGUILayout.LabelField($"{variants.Count} distinct variants of {definition.AllowedOrientations.Count} allowed orientations. Axes: red X, green Y, blue Z.", EditorStyles.wordWrappedMiniLabel);
             if (definition.Model == null)
             {
                 EditorGUILayout.HelpBox("This tile has no model, so all its orientations look the same.", MessageType.None);

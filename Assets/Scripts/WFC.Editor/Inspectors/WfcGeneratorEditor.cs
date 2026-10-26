@@ -23,7 +23,26 @@ namespace Wfc.Editor
 
             if (!string.IsNullOrEmpty(generator.LastError))
             {
-                EditorGUILayout.HelpBox(generator.LastError, MessageType.Warning);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.HelpBox(generator.LastError, MessageType.Warning);
+                    if (generator.InvalidPaintedCells.Count > 0 && GUILayout.Button("Select", GUILayout.Width(52), GUILayout.Height(38)))
+                    {
+                        ChunkEditing.SelectCells(generator.Chunk, generator.InvalidPaintedCells);
+                    }
+                }
+            }
+            if (generator.Ruleset != null && generator.Ruleset.TileSet != null && generator.Chunk.TileSet != generator.Ruleset.TileSet)
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.HelpBox($"The chunk must use the ruleset's tile set ({generator.Ruleset.TileSet.name}).", MessageType.Error);
+                    if (generator.Chunk.Cells.CountNonEmpty() == 0 && GUILayout.Button("Use It", GUILayout.Width(60), GUILayout.Height(38)))
+                    {
+                        Undo.RecordObject(generator.Chunk, "Use Ruleset Tile Set");
+                        generator.Chunk.TileSet = generator.Ruleset.TileSet;
+                    }
+                }
             }
             EditorGUILayout.LabelField("Status", Describe(generator), EditorStyles.wordWrappedLabel);
             DrawContradiction(generator);
@@ -64,6 +83,7 @@ namespace Wfc.Editor
                     generator.Clear();
                 }
             }
+            DrawResultActions(generator);
 
             EditorGUILayout.Space();
             DrawCalibration(generator);
@@ -76,20 +96,83 @@ namespace Wfc.Editor
             wasAnimating = generator.IsAnimating;
         }
 
+        /// <summary>Ways to keep a generated result: as painted cells, as a chunk asset or as a new sample.</summary>
+        private static void DrawResultActions(WfcGenerator generator)
+        {
+            bool hasResult = generator.Chunk.Generated != null && generator.Solver != null && generator.Solver.Status == SolverStatus.Done;
+            using (new EditorGUILayout.HorizontalScope())
+            using (new EditorGUI.DisabledScope(!hasResult))
+            {
+                if (GUILayout.Button(new GUIContent("Keep Result", "Turns the generated tiles into painted cells of the chunk, so they're saved and can be edited.")))
+                {
+                    Undo.RecordObject(generator.Chunk, "Keep Generated Tiles");
+                    generator.KeepResult();
+                }
+                if (GUILayout.Button(new GUIContent("Save As Chunk Asset…", "Stores painted and generated cells in a chunk asset.")))
+                {
+                    string path = EditorUtility.SaveFilePanelInProject("Save Result", $"{generator.name} Result", "asset", "Choose where to save the chunk asset.");
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        var asset = CreateInstance<ChunkAsset>();
+                        asset.Set(generator.Chunk.TileSet, generator.GetOutput());
+                        AssetDatabase.CreateAsset(asset, path);
+                        AssetDatabase.SaveAssets();
+                        EditorGUIUtility.PingObject(asset);
+                    }
+                }
+                if (GUILayout.Button(new GUIContent("New Sample", "Creates a sample (Chunk + Sample Rule Source) from the result next to the generator, to adjust and bake.")))
+                {
+                    Selection.activeGameObject = CreateSample(generator);
+                }
+            }
+        }
+
+        /// <summary>
+        /// A new sample holding the generator's output. If the source of the generator's ruleset counts empty cells as
+        /// a tile (usually air), that tile is left out again: the output has no gaps, so the rules stay the same.
+        /// </summary>
+        private static GameObject CreateSample(WfcGenerator generator)
+        {
+            ChunkData output = generator.GetOutput();
+            TileSet tileSet = generator.Chunk.TileSet;
+            TileDefinition emptyCellTile = FindObjectsByType<SampleRuleSource>(FindObjectsInactive.Exclude)
+                .FirstOrDefault(s => s.Ruleset == generator.Ruleset)?.EmptyCellTile;
+            int empty = tileSet.IndexOf(emptyCellTile);
+            for (int cell = 0; empty >= 0 && cell < output.CellCount; cell++)
+            {
+                if (output.GetTile(cell) == empty && output.GetOrientation(cell) == Orientation.Identity)
+                {
+                    output.Clear(cell);
+                }
+            }
+
+            var gameObject = new GameObject($"{generator.name} Sample");
+            Undo.RegisterCreatedObjectUndo(gameObject, "New Sample From Result");
+            Transform source = generator.transform;
+            gameObject.transform.SetPositionAndRotation(source.TransformPoint(new Vector3(generator.Chunk.Size.x + 4, 0, 0)), source.rotation);
+            var sample = gameObject.AddComponent<SampleRuleSource>();
+            gameObject.AddComponent<ChunkView>();
+            sample.Chunk.TileSet = tileSet;
+            sample.Chunk.SetCells(output);
+            sample.EmptyCellTile = empty >= 0 ? emptyCellTile : null;
+            return gameObject;
+        }
+
         private static void DrawCalibration(WfcGenerator generator)
         {
             showCalibration = EditorGUILayout.BeginFoldoutHeaderGroup(showCalibration, "Calibrate Connection Weights");
             if (showCalibration)
             {
-                RulesetAuthoring root = generator.Ruleset == null ? null
-                    : FindObjectsByType<RulesetAuthoring>(FindObjectsInactive.Exclude).FirstOrDefault(r => r.Target == generator.Ruleset);
+                RuleSource source = generator.Ruleset == null ? null
+                    : FindObjectsByType<RuleSource>(FindObjectsInactive.Exclude).FirstOrDefault(r => r.Ruleset == generator.Ruleset);
                 EditorGUILayout.LabelField(
                     "Generates batches of grids with this generator's boundaries and adjusts every connection weight until each connection " +
-                    "appears about as often as in the samples. The result is stored as weight overrides on the ruleset root.",
+                    "appears about as often as in the samples. The result is stored as weight overrides on the rule source.",
                     EditorStyles.wordWrappedMiniLabel);
-                if (root == null)
+                if (source == null || !source.HasObservations)
                 {
-                    EditorGUILayout.HelpBox("No ruleset root in the open scenes bakes into this generator's ruleset.", MessageType.Info);
+                    EditorGUILayout.HelpBox(source == null ? "No rule source in the open scenes bakes into this generator's ruleset."
+                        : $"{source.name} doesn't learn from samples, so there's nothing to calibrate towards.", MessageType.Info);
                     EditorGUILayout.EndFoldoutHeaderGroup();
                     return;
                 }
@@ -108,9 +191,9 @@ namespace Wfc.Editor
                 {
                     using (new EditorGUI.DisabledScope(running))
                     {
-                        if (GUILayout.Button($"Calibrate {root.name}"))
+                        if (GUILayout.Button($"Calibrate {source.name}"))
                         {
-                            calibrator = new WeightCalibrator(generator, root, CalibrationSettings);
+                            calibrator = new WeightCalibrator(generator, source, CalibrationSettings);
                             calibrator.Start();
                         }
                     }
@@ -121,7 +204,7 @@ namespace Wfc.Editor
                             calibrator.Cancel();
                         }
                     }
-                    using (new EditorGUI.DisabledScope(running || calibrator?.Best == null || calibrator.Root != root))
+                    using (new EditorGUI.DisabledScope(running || calibrator?.Best == null || calibrator.Source != source))
                     {
                         if (GUILayout.Button("Apply Best"))
                         {
