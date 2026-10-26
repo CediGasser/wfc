@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using Unity.Mathematics;
 using UnityEngine;
 using Wfc.Authoring;
 using Wfc.Tests.Solver;
@@ -9,49 +9,28 @@ namespace Wfc.Tests
 {
     public class WfcGeneratorTests
     {
-        private readonly List<Object> created = new List<Object>();
+        private readonly TestObjects objects = new TestObjects();
 
         [TearDown]
-        public void TearDown()
-        {
-            foreach (Object obj in created)
-            {
-                if (obj != null)
-                {
-                    Object.DestroyImmediate(obj);
-                }
-            }
-            created.Clear();
-        }
+        public void TearDown() => objects.DestroyAll();
 
-        /// <summary>An in-memory ruleset whose tiles all have a cube as model, in the data's tile order.</summary>
-        private Ruleset CreateRuleset(TestRules rules, out RulesetData data, out TileDefinition[] tiles)
+        /// <summary>An in-memory ruleset whose tiles all have a cube as model, with a tile set in the data's tile order.</summary>
+        private Ruleset CreateRuleset(TestRules rules, out RulesetData data)
         {
             data = rules.Data();
-            tiles = new TileDefinition[data.TileCount];
-            for (int t = 0; t < tiles.Length; t++)
-            {
-                GameObject model = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                model.name = data.tileNames[t];
-                created.Add(model);
-                tiles[t] = ScriptableObject.CreateInstance<TileDefinition>();
-                tiles[t].name = data.tileNames[t];
-                tiles[t].SetModel(model);
-                created.Add(tiles[t]);
-            }
-            var ruleset = ScriptableObject.CreateInstance<Ruleset>();
-            ruleset.Set(tiles, data, "test");
-            created.Add(ruleset);
+            TileSet tileSet = objects.TileSet(data.tileNames.Select(name => objects.Definition(name)).ToArray());
+            var ruleset = objects.Track(ScriptableObject.CreateInstance<Ruleset>());
+            ruleset.Set(tileSet, data, "test");
             return ruleset;
         }
 
-        private WfcGenerator CreateGenerator(Ruleset ruleset, Vector3Int size, uint seed)
+        private WfcGenerator CreateGenerator(Ruleset ruleset, int3 size, uint seed)
         {
-            var generator = new GameObject("generator").AddComponent<WfcGenerator>();
-            created.Add(generator.gameObject);
+            var generator = objects.Track(new GameObject("generator")).AddComponent<WfcGenerator>();
             generator.Ruleset = ruleset;
-            generator.Size = size;
             generator.Seed = seed;
+            generator.Chunk.TileSet = ruleset != null ? ruleset.TileSet : null;
+            generator.Chunk.Resize(size, int3.zero);
             return generator;
         }
 
@@ -60,39 +39,46 @@ namespace Wfc.Tests
             return Enumerable.Range(0, generator.Solver.Grid.CellCount).Select(generator.Solver.GetCollapsedVariant).ToArray();
         }
 
+        private static int TileIndex(RulesetData data, string name) => System.Array.IndexOf(data.tileNames, name);
+
         [Test]
-        public void GenerateInstantlyFillsEveryCell()
+        public void GeneratorBringsItsChunk()
         {
-            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Checker(), out _, out _), new Vector3Int(4, 3, 2), 1);
+            var generator = objects.Track(new GameObject("generator")).AddComponent<WfcGenerator>();
+            Assert.That(generator.GetComponent<Chunk>(), Is.Not.Null);
+        }
+
+        [Test]
+        public void GenerateInstantlyFillsTheChunk()
+        {
+            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Checker(), out _), new int3(4, 3, 2), 1);
             generator.Generate(animate: false);
 
             Assert.That(generator.LastError, Is.Null);
             Assert.That(generator.Solver.Status, Is.EqualTo(SolverStatus.Done));
             Assert.That(generator.DecidedCount, Is.EqualTo(24));
-            Assert.That(generator.Output.childCount, Is.EqualTo(24));
-            Assert.That(generator.Output.gameObject.hideFlags & HideFlags.DontSave, Is.EqualTo(HideFlags.DontSave), "generated tiles aren't saved");
+            Assert.That(generator.Chunk.Generated.CountNonEmpty(), Is.EqualTo(24));
+            Assert.That(generator.Chunk.Cells.CountNonEmpty(), Is.Zero, "the result isn't authored");
         }
 
         [Test]
-        public void GeneratedTilesSitOnTheirCells()
+        public void GeneratedCellsMatchTheSolver()
         {
-            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Checker(), out RulesetData data, out _), new Vector3Int(2, 2, 2), 3);
+            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Checker(), out RulesetData data), new int3(2, 2, 2), 3);
             generator.Generate(animate: false);
-            foreach (Transform tile in generator.Output)
+            for (int cell = 0; cell < 8; cell++)
             {
-                Vector3 position = tile.localPosition;
-                int cell = generator.Solver.Grid.ToIndex(OrientationUnity.RoundToInt3(position));
-                string expected = data.tileNames[data.variantTile[generator.Solver.GetCollapsedVariant(cell)]];
-                Assert.That(tile.name, Does.StartWith(expected));
+                int variant = generator.Solver.GetCollapsedVariant(cell);
+                Assert.That(generator.Chunk.Generated.GetTile(cell), Is.EqualTo(data.variantTile[variant]));
             }
         }
 
         [Test]
         public void SameSeedGivesTheSameLayout()
         {
-            Ruleset ruleset = CreateRuleset(TestRules.HeavyLight(), out _, out _);
-            WfcGenerator first = CreateGenerator(ruleset, new Vector3Int(5, 5, 5), 9);
-            WfcGenerator second = CreateGenerator(ruleset, new Vector3Int(5, 5, 5), 9);
+            Ruleset ruleset = CreateRuleset(TestRules.HeavyLight(), out _);
+            WfcGenerator first = CreateGenerator(ruleset, new int3(5, 5, 5), 9);
+            WfcGenerator second = CreateGenerator(ruleset, new int3(5, 5, 5), 9);
             first.Generate(animate: false);
             second.Generate(animate: false);
             Assert.That(Layout(first), Is.EqualTo(Layout(second)));
@@ -101,34 +87,34 @@ namespace Wfc.Tests
         [Test]
         public void StepOnceAdvancesGradually()
         {
-            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.HeavyLight(), out _, out _), new Vector3Int(3, 3, 3), 2);
+            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.HeavyLight(), out _), new int3(3, 3, 3), 2);
             generator.StepOnce();
             Assert.That(generator.Steps, Is.EqualTo(1));
             Assert.That(generator.DecidedCount, Is.EqualTo(1));
-            Assert.That(generator.Output.childCount, Is.EqualTo(1));
+            Assert.That(generator.Chunk.Generated.CountNonEmpty(), Is.EqualTo(1));
             generator.StepOnce();
             Assert.That(generator.DecidedCount, Is.EqualTo(2));
             generator.RunToEnd();
             Assert.That(generator.Solver.Status, Is.EqualTo(SolverStatus.Done));
-            Assert.That(generator.Output.childCount, Is.EqualTo(27));
+            Assert.That(generator.Chunk.Generated.CountNonEmpty(), Is.EqualTo(27));
         }
 
         [Test]
-        public void ClearRemovesTheOutput()
+        public void ClearRemovesTheResult()
         {
-            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Checker(), out _, out _), new Vector3Int(2, 2, 2), 1);
+            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Checker(), out _), new int3(2, 2, 2), 1);
             generator.Generate(animate: false);
             generator.Clear();
-            Assert.That(generator.Output, Is.Null);
+            Assert.That(generator.Chunk.Generated, Is.Null);
             Assert.That(generator.Solver, Is.Null);
         }
 
         [Test]
         public void BoundaryTileConstrainsTheEdge()
         {
-            Ruleset ruleset = CreateRuleset(TestRules.Layers(), out RulesetData data, out TileDefinition[] tiles);
-            WfcGenerator generator = CreateGenerator(ruleset, new Vector3Int(3, 1, 3), 1);
-            TileDefinition bottom = tiles[System.Array.IndexOf(data.tileNames, "bottom")];
+            Ruleset ruleset = CreateRuleset(TestRules.Layers(), out RulesetData data);
+            WfcGenerator generator = CreateGenerator(ruleset, new int3(3, 1, 3), 1);
+            TileDefinition bottom = ruleset.TileSet[TileIndex(data, "bottom")];
             generator.SetBoundary(Direction.NegY, new BoundarySide(BoundaryMode.Tile, bottom));
             generator.Generate(animate: false);
 
@@ -140,19 +126,19 @@ namespace Wfc.Tests
         public void FailedGenerationReportsTheContradictionCell()
         {
             // Three layers of top/bottom tiles can never work: the generation gives up after its attempts.
-            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Layers(), out _, out _), new Vector3Int(1, 3, 1), 1);
+            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Layers(), out _), new int3(1, 3, 1), 1);
             generator.Generate(animate: false);
 
             Assert.That(generator.Solver.Status, Is.EqualTo(SolverStatus.Contradiction));
             Assert.That(generator.Attempts, Is.EqualTo(10), "default max attempts");
-            Assert.That(generator.TryGetContradiction(out Unity.Mathematics.int3 cell), Is.True);
+            Assert.That(generator.TryGetContradiction(out int3 cell), Is.True);
             Assert.That(generator.Solver.Wave.GetCount(generator.Solver.Grid.ToIndex(cell)), Is.EqualTo(0));
         }
 
         [Test]
         public void SuccessfulGenerationHasNoContradiction()
         {
-            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Checker(), out _, out _), new Vector3Int(3, 3, 3), 1);
+            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Checker(), out _), new int3(3, 3, 3), 1);
             generator.Generate(animate: false);
             Assert.That(generator.TryGetContradiction(out _), Is.False);
         }
@@ -160,10 +146,80 @@ namespace Wfc.Tests
         [Test]
         public void MissingRulesetReportsAnError()
         {
-            WfcGenerator generator = CreateGenerator(null, new Vector3Int(2, 2, 2), 1);
+            WfcGenerator generator = CreateGenerator(null, new int3(2, 2, 2), 1);
             generator.Generate(animate: false);
             Assert.That(generator.LastError, Is.Not.Null);
             Assert.That(generator.Solver, Is.Null);
+        }
+
+        [Test]
+        public void ChunkMustUseTheRulesetsTileSet()
+        {
+            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Checker(), out _), new int3(2, 2, 2), 1);
+            generator.Chunk.TileSet = objects.TileSet(objects.Definition("other"));
+            generator.Generate(animate: false);
+            Assert.That(generator.LastError, Does.Contain("tile set"));
+            Assert.That(generator.Solver, Is.Null);
+        }
+
+        [Test]
+        public void PaintedCellsAreKept()
+        {
+            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Checker(), out RulesetData data), new int3(3, 3, 1), 4);
+            int white = TileIndex(data, "white");
+            generator.Chunk.SetCell(new int3(1, 1, 0), white, Orientation.Identity);
+            generator.Generate(animate: false);
+
+            Assert.That(generator.LastError, Is.Null);
+            Assert.That(generator.Solver.Status, Is.EqualTo(SolverStatus.Done));
+            SolutionAssert.IsValid(generator.Solver, data);
+            Assert.That(generator.GetOutput().GetTile(generator.Chunk.Cells.ToIndex(new int3(1, 1, 0))), Is.EqualTo(white));
+            Assert.That(generator.GetOutput().CountNonEmpty(), Is.EqualTo(9));
+        }
+
+        [Test]
+        public void InvalidPaintIsReportedAndGeneratedOver()
+        {
+            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Layers(), out RulesetData data), new int3(2, 2, 1), 1);
+            // "bottom" is fixed, so a rotated one doesn't exist in the rules.
+            generator.Chunk.SetCell(new int3(0, 0, 0), TileIndex(data, "bottom"), Orientation.RotationY90);
+            generator.Generate(animate: false);
+
+            Assert.That(generator.LastError, Is.Not.Null);
+            Assert.That(generator.InvalidPaintedCells, Is.EqualTo(new[] { 0 }));
+            Assert.That(generator.Solver.Status, Is.EqualTo(SolverStatus.Done));
+        }
+
+        [Test]
+        public void ContradictingPaintFailsWithoutRetrying()
+        {
+            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Checker(), out RulesetData data), new int3(2, 1, 1), 1);
+            int black = TileIndex(data, "black");
+            generator.Chunk.SetCell(0, black, Orientation.Identity);
+            generator.Chunk.SetCell(1, black, Orientation.Identity);
+            generator.Generate(animate: false);
+
+            Assert.That(generator.Solver.Status, Is.EqualTo(SolverStatus.Contradiction));
+            Assert.That(generator.Attempts, Is.EqualTo(1));
+            Assert.That(generator.LastError, Does.Contain("contradict"));
+        }
+
+        [Test]
+        public void KeepResultTurnsTheResultIntoPaintedCells()
+        {
+            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.HeavyLight(), out _), new int3(3, 2, 2), 5);
+            generator.Generate(animate: false);
+            ChunkData output = generator.GetOutput();
+
+            Assert.That(generator.KeepResult(), Is.EqualTo(12));
+            Assert.That(generator.Chunk.Cells.ContentEquals(output), Is.True);
+            Assert.That(generator.Chunk.Generated, Is.Null);
+            Assert.That(generator.Solver, Is.Null);
+
+            // Generating again keeps everything, since every cell is painted now.
+            generator.Seed = 77;
+            generator.Generate(animate: false);
+            Assert.That(generator.GetOutput().ContentEquals(output), Is.True);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -27,18 +28,17 @@ namespace Wfc.Authoring
     }
 
     /// <summary>
-    /// Generates a grid of tiles from a baked <see cref="Ruleset"/>, either instantly or animated a few steps per frame
-    /// (in Play mode and in the editor). Its transform is the grid: cell (x, y, z) sits at local position (x, y, z).
-    /// Generated tiles live under a child that isn't saved with the scene.
+    /// Fills its <see cref="Authoring.Chunk"/> from a baked <see cref="Ruleset"/>, either instantly or animated a few
+    /// steps per frame (in Play mode and in the editor). The chunk's painted (authored) cells are kept and everything
+    /// else is generated around them. The result goes into the chunk's generated layer, which isn't saved;
+    /// <see cref="KeepResult"/> turns it into authored cells. Boundaries treat a tile as lying just outside a side.
     /// </summary>
-    [ExecuteAlways, DisallowMultipleComponent]
+    [ExecuteAlways, DisallowMultipleComponent, RequireComponent(typeof(Chunk))]
     [AddComponentMenu("WFC/WFC Generator")]
     public sealed class WfcGenerator : MonoBehaviour
     {
-        private const string OutputName = "Generated (not saved)";
-
+        [Tooltip("Must use the same tile set as the chunk.")]
         [SerializeField] private Ruleset ruleset;
-        [SerializeField] private Vector3Int size = new Vector3Int(8, 4, 8);
         [Tooltip("Seed of the first attempt. 0 is replaced by 1.")]
         [SerializeField] private uint seed = 1;
         [Tooltip("Pick a new seed every time Generate is pressed.")]
@@ -59,10 +59,15 @@ namespace Wfc.Authoring
         [SerializeField] private BoundarySide back;
         [SerializeField] private BoundarySide front;
 
+        private Chunk chunk;
         private WfcSolver solver;
         private RulesetData data;
-        private GameObject[] generated;
         private double nextStepTime;
+        // The painted cells contradict each other or the boundaries, so new seeds can't help.
+        private bool paintContradicts;
+        private readonly List<int> invalidPaintedCells = new List<int>();
+
+        public Chunk Chunk => chunk != null ? chunk : chunk = GetComponent<Chunk>();
 
         public Ruleset Ruleset
         {
@@ -70,16 +75,16 @@ namespace Wfc.Authoring
             set => ruleset = value;
         }
 
-        public Vector3Int Size
-        {
-            get => size;
-            set => size = value;
-        }
-
         public uint Seed
         {
             get => seed;
             set => seed = value;
+        }
+
+        public int MaxAttempts
+        {
+            get => maxAttempts;
+            set => maxAttempts = Mathf.Max(1, value);
         }
 
         /// <summary>The solver of the current generation, or null before the first one.</summary>
@@ -91,10 +96,11 @@ namespace Wfc.Authoring
 
         public int Steps { get; private set; }
 
-        /// <summary>Why the last generation couldn't start, or null.</summary>
+        /// <summary>Why the last generation couldn't start or what it had to ignore, or null.</summary>
         public string LastError { get; private set; }
 
-        public Transform Output => transform.Find(OutputName);
+        /// <summary>Painted cells the ruleset has no variant for (unknown tile or disallowed orientation); they were generated over.</summary>
+        public IReadOnlyList<int> InvalidPaintedCells => invalidPaintedCells;
 
         public int DecidedCount => solver?.Wave.DecidedCount ?? 0;
 
@@ -169,7 +175,7 @@ namespace Wfc.Authoring
                     return;
                 }
             }
-            Advance(spawn: true);
+            Advance(write: true);
         }
 
         /// <summary>Finishes the current generation immediately (including restarts).</summary>
@@ -182,9 +188,9 @@ namespace Wfc.Authoring
             }
             while (solver.Status == SolverStatus.Running)
             {
-                Advance(spawn: false);
+                Advance(write: false);
             }
-            SpawnAll();
+            WriteAll();
         }
 
         public void Stop() => IsAnimating = false;
@@ -194,16 +200,53 @@ namespace Wfc.Authoring
         {
             IsAnimating = false;
             solver = null;
-            generated = null;
-            DestroyOutput();
+            Chunk.ClearGenerated();
+        }
+
+        /// <summary>
+        /// Turns the generated tiles into authored cells of the chunk, so they're saved and can be edited, painted
+        /// over or used as a sample. Returns the number of cells filled.
+        /// </summary>
+        public int KeepResult()
+        {
+            IsAnimating = false;
+            solver = null;
+            return Chunk.KeepGenerated();
+        }
+
+        /// <summary>A copy of what the chunk shows: its authored cells, with the generated tiles in the empty ones.</summary>
+        public ChunkData GetOutput()
+        {
+            ChunkData output = Chunk.Cells.Clone();
+            ChunkData generated = Chunk.Generated;
+            for (int cell = 0; generated != null && cell < output.CellCount; cell++)
+            {
+                if (output.IsEmpty(cell) && !generated.IsEmpty(cell))
+                {
+                    output.Set(cell, generated.GetTile(cell), generated.GetOrientation(cell));
+                }
+            }
+            return output;
         }
 
         private bool Prepare()
         {
             LastError = null;
+            invalidPaintedCells.Clear();
             if (ruleset == null || ruleset.Data == null || ruleset.Data.VariantCount == 0)
             {
                 LastError = "Assign a baked ruleset first.";
+                return false;
+            }
+            if (ruleset.TileSet == null)
+            {
+                LastError = $"{ruleset.name} has no tile set. Bake it again.";
+                return false;
+            }
+            if (Chunk.TileSet != ruleset.TileSet)
+            {
+                string chunkSet = Chunk.TileSet != null ? Chunk.TileSet.name : "no tile set";
+                LastError = $"The chunk uses {chunkSet}, but {ruleset.name} uses {ruleset.TileSet.name}. Tile indices only match within one tile set.";
                 return false;
             }
             if (newSeedEachGeneration)
@@ -216,21 +259,37 @@ namespace Wfc.Authoring
             }
 
             data = ruleset.Data;
-            var gridSize = new int3(Mathf.Max(1, size.x), Mathf.Max(1, size.y), Mathf.Max(1, size.z));
-            solver = CreateSolver(new CompiledRules(data), data, ruleset.Tiles, gridSize, seed);
+            solver = CreateSolver(new CompiledRules(data), data, ruleset.TileSet, Chunk.Size, seed);
+            paintContradicts = solver.Status == SolverStatus.Contradiction;
+            if (!paintContradicts)
+            {
+                paintContradicts = !ChunkBridge.Prefill(solver, data, Chunk.Cells, invalidPaintedCells);
+                if (paintContradicts)
+                {
+                    int3 cell = solver.Grid.ToCell(solver.ContradictionCell);
+                    LastError = $"The painted cells contradict each other or the boundaries: no tile fits cell {cell}.";
+                }
+            }
+            else
+            {
+                LastError = "The boundaries contradict the rules, so nothing fits.";
+            }
+            if (invalidPaintedCells.Count > 0)
+            {
+                LastError ??= $"{invalidPaintedCells.Count} painted cell(s) use a tile or orientation the ruleset doesn't have. They are generated over.";
+            }
             Attempts = 1;
             Steps = 0;
-            DestroyOutput();
-            generated = new GameObject[solver.Grid.CellCount];
-            SpawnAll();
+            WriteAll();
             return true;
         }
 
         /// <summary>
         /// A solver for this generator's boundaries on any rules, e.g. rules derived from samples that aren't baked
-        /// yet. <paramref name="tiles"/> are the tile definitions in the order of <paramref name="data"/>'s tile indices.
+        /// yet. <paramref name="tileSet"/> is the tile set <paramref name="data"/>'s tile indices refer to. Painted
+        /// cells aren't applied, since the grid may have another size than the chunk.
         /// </summary>
-        public WfcSolver CreateSolver(CompiledRules rules, RulesetData data, IReadOnlyList<TileDefinition> tiles, int3 gridSize, uint solverSeed)
+        public WfcSolver CreateSolver(CompiledRules rules, RulesetData data, TileSet tileSet, int3 gridSize, uint solverSeed)
         {
             var created = new WfcSolver(rules, gridSize, solverSeed);
             for (int d = 0; d < Directions.Count; d++)
@@ -241,47 +300,25 @@ namespace Wfc.Authoring
                 {
                     continue;
                 }
-                int tile = IndexOf(tiles, boundary.tile);
-                if (tile < 0)
+                int tile = tileSet != null ? tileSet.IndexOf(boundary.tile) : -1;
+                List<int> outside = data.GetVariants(tile).ToList();
+                if (outside.Count == 0)
                 {
                     Debug.LogWarning($"{name}: boundary tile {boundary.tile.name} isn't part of the ruleset, so the {side.ToShortString()} side is left unconstrained.", this);
                     continue;
-                }
-                var outside = new List<int>();
-                for (int v = 0; v < data.VariantCount; v++)
-                {
-                    if (data.variantTile[v] == tile)
-                    {
-                        outside.Add(v);
-                    }
                 }
                 created.ConstrainSide(side, outside);
             }
             return created;
         }
 
-        private static int IndexOf(IReadOnlyList<TileDefinition> tiles, TileDefinition definition)
-        {
-            for (int i = 0; i < tiles.Count; i++)
-            {
-                if (tiles[i] == definition)
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        private void Advance(bool spawn)
+        private void Advance(bool write)
         {
             SolverStatus status = solver.Step();
             Steps++;
-            if (spawn)
+            if (write)
             {
-                foreach (int cell in solver.ChangedCells)
-                {
-                    Spawn(cell);
-                }
+                WriteCells(solver.ChangedCells);
             }
             if (status != SolverStatus.Contradiction)
             {
@@ -292,19 +329,30 @@ namespace Wfc.Authoring
                 return;
             }
 
-            if (Attempts >= maxAttempts)
+            if (paintContradicts || Attempts >= maxAttempts)
             {
                 IsAnimating = false;
                 return;
             }
             Attempts++;
             solver.Reset(WfcSolver.NextSeed(solver.Seed));
-            DestroyOutput();
-            generated = new GameObject[solver.Grid.CellCount];
-            if (spawn)
+            if (write)
             {
-                SpawnAll();
+                WriteAll();
             }
+        }
+
+        /// <summary>Copies the solver's state of the given cells into the chunk's generated layer.</summary>
+        private void WriteCells(IReadOnlyList<int> cells)
+        {
+            ChunkBridge.ReadResult(solver, data, Chunk.GetOrCreateGenerated(), cells);
+            Chunk.NotifyGenerated(cells);
+        }
+
+        private void WriteAll()
+        {
+            ChunkBridge.ReadResult(solver, data, Chunk.GetOrCreateGenerated());
+            Chunk.NotifyGenerated(Chunk.AllCells);
         }
 
         private void Update()
@@ -318,7 +366,7 @@ namespace Wfc.Authoring
             {
                 for (int i = 0; i < stepsPerFrame && IsAnimating; i++)
                 {
-                    Advance(spawn: true);
+                    Advance(write: true);
                 }
                 nextStepTime = now + stepInterval;
 #if UNITY_EDITOR
@@ -345,9 +393,11 @@ namespace Wfc.Authoring
         private void OnDisable()
         {
             IsAnimating = false;
-            DestroyOutput(regenerating: false);
-            generated = null;
             solver = null;
+            if (chunk != null)
+            {
+                chunk.ClearGenerated();
+            }
         }
 
         private static void RequestUpdate()
@@ -361,93 +411,13 @@ namespace Wfc.Authoring
 #endif
         }
 
-        private void SpawnAll()
-        {
-            for (int cell = 0; cell < solver.Grid.CellCount; cell++)
-            {
-                Spawn(cell);
-            }
-        }
-
-        private void Spawn(int cell)
-        {
-            if (generated == null || generated[cell] != null)
-            {
-                return;
-            }
-            int variant = solver.GetCollapsedVariant(cell);
-            if (variant < 0)
-            {
-                return;
-            }
-            TileDefinition definition = ruleset.Tiles[data.variantTile[variant]];
-            if (definition == null || definition.Model == null)
-            {
-                return;
-            }
-
-            int3 position = solver.Grid.ToCell(cell);
-            var wrapper = new GameObject($"{definition.name} {position}") { hideFlags = HideFlags.DontSave };
-            wrapper.transform.SetParent(GetOrCreateOutput(), false);
-            data.GetVariantOrientation(variant).ToRotationScale(out Quaternion rotation, out Vector3 scale);
-            wrapper.transform.localPosition = position.ToVector3();
-            wrapper.transform.localRotation = rotation;
-            wrapper.transform.localScale = scale;
-
-            GameObject model = Instantiate(definition.Model, wrapper.transform, false);
-            foreach (Transform part in model.GetComponentsInChildren<Transform>(true))
-            {
-                part.gameObject.hideFlags = HideFlags.DontSave;
-            }
-            generated[cell] = wrapper;
-        }
-
-        private Transform GetOrCreateOutput()
-        {
-            Transform output = Output;
-            if (output == null)
-            {
-                output = new GameObject(OutputName) { hideFlags = HideFlags.DontSave }.transform;
-                output.SetParent(transform, false);
-            }
-            return output;
-        }
-
-        private void DestroyOutput(bool regenerating = true)
-        {
-            Transform output = Output;
-            if (output == null)
-            {
-                return;
-            }
-            if (Application.isPlaying)
-            {
-                Destroy(output.gameObject);
-                // Destroy is deferred; detach so a new output can be created in the same frame. Not while disabling:
-                // Unity doesn't allow reparenting during deactivation, and nothing is created afterwards anyway.
-                if (regenerating)
-                {
-                    output.name = OutputName + " (destroyed)";
-                    output.SetParent(null);
-                }
-            }
-            else
-            {
-                DestroyImmediate(output.gameObject);
-            }
-        }
-
         private void OnDrawGizmos()
         {
-            Gizmos.matrix = transform.localToWorldMatrix;
-            Vector3 extent = new Vector3(Mathf.Max(1, size.x), Mathf.Max(1, size.y), Mathf.Max(1, size.z));
-            Gizmos.color = new Color(1f, 1f, 1f, 0.35f);
-            Gizmos.DrawWireCube((extent - Vector3.one) * 0.5f, extent);
-
-            if (solver == null)
+            if (solver == null || !solver.Grid.Size.Equals(Chunk.Size))
             {
                 return;
             }
+            Gizmos.matrix = transform.localToWorldMatrix;
             if (TryGetContradiction(out int3 failed))
             {
                 DrawContradiction(failed.ToVector3());
@@ -476,7 +446,7 @@ namespace Wfc.Authoring
             Gizmos.color = new Color(1f, 0.15f, 0.15f, 1f);
             Gizmos.DrawWireCube(center, Vector3.one * 1.04f);
             // Lines along the grid axes, so the cell stands out even when it's surrounded by tiles.
-            Vector3 extent = new Vector3(Mathf.Max(1, size.x), Mathf.Max(1, size.y), Mathf.Max(1, size.z));
+            Vector3 extent = Chunk.Size.ToVector3();
             Gizmos.color = new Color(1f, 0.15f, 0.15f, 0.6f);
             Gizmos.DrawLine(new Vector3(-0.5f, center.y, center.z), new Vector3(extent.x - 0.5f, center.y, center.z));
             Gizmos.DrawLine(new Vector3(center.x, -0.5f, center.z), new Vector3(center.x, extent.y - 0.5f, center.z));

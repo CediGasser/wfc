@@ -134,10 +134,11 @@ public class GeneratorShowcase : MonoBehaviour
         generator.transform.SetPositionAndRotation(initialPosition, initialRotation);
     }
 
+    private Vector3 GridSize() => generator.Chunk.Size.ToVector3();
+
     private Vector3 GridCenter()
     {
-        Vector3 size = generator.Size;
-        Vector3 localCenter = (Vector3.Max(size, Vector3.one) - Vector3.one) * 0.5f;
+        Vector3 localCenter = (GridSize() - Vector3.one) * 0.5f;
         return generator.transform.TransformPoint(localCenter);
     }
 
@@ -150,7 +151,7 @@ public class GeneratorShowcase : MonoBehaviour
         }
 
         // Fit the grid's bounding sphere, so it stays in view however it's rotated while spinning.
-        Vector3 extent = Vector3.Scale(Vector3.Max(generator.Size, Vector3.one), generator.transform.lossyScale);
+        Vector3 extent = Vector3.Scale(GridSize(), generator.transform.lossyScale);
         float radius = extent.magnitude * 0.5f * framingPadding;
         float verticalHalfFov = cam.fieldOfView * 0.5f * Mathf.Deg2Rad;
         float horizontalHalfFov = Mathf.Atan(Mathf.Tan(verticalHalfFov) * cam.aspect);
