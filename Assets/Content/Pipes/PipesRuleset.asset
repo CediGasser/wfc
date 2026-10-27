@@ -195,7 +195,7 @@ MonoBehaviour:
       tileA: 10
       tileB: 11
       observations: 4
-      weight: 3.2035398
+      weight: 3.3692293
       overridden: 1
       memberCount: 24
     - key:
@@ -207,7 +207,7 @@ MonoBehaviour:
       tileA: 10
       tileB: 0
       observations: 4
-      weight: 3.1537971
+      weight: 3.3169136
       overridden: 1
       memberCount: 24
     - key:
@@ -219,7 +219,7 @@ MonoBehaviour:
       tileA: 10
       tileB: 0
       observations: 4
-      weight: 2.715406
+      weight: 2.8276134
       overridden: 1
       memberCount: 24
     - key:
@@ -231,7 +231,7 @@ MonoBehaviour:
       tileA: 10
       tileB: 11
       observations: 4
-      weight: 3.198659
+      weight: 3.364096
       overridden: 1
       memberCount: 24
     - key:
@@ -243,7 +243,7 @@ MonoBehaviour:
       tileA: 10
       tileB: 0
       observations: 4
-      weight: 3.0132725
+      weight: 3.167384
       overridden: 1
       memberCount: 24
     - key:
@@ -255,7 +255,7 @@ MonoBehaviour:
       tileA: 10
       tileB: 12
       observations: 4
-      weight: 2.715406
+      weight: 2.8276134
       overridden: 1
       memberCount: 4
     - key:
@@ -267,7 +267,7 @@ MonoBehaviour:
       tileA: 4
       tileB: 2
       observations: 4
-      weight: 1.6011629
+      weight: 1.5379524
       overridden: 1
       memberCount: 4
     - key:
@@ -279,7 +279,7 @@ MonoBehaviour:
       tileA: 4
       tileB: 3
       observations: 3
-      weight: 0.95346534
+      weight: 0.8982701
       overridden: 1
       memberCount: 4
     - key:
@@ -291,7 +291,7 @@ MonoBehaviour:
       tileA: 4
       tileB: 7
       observations: 1
-      weight: 5.7488794
+      weight: 5.570144
       overridden: 1
       memberCount: 4
     - key:
@@ -303,7 +303,7 @@ MonoBehaviour:
       tileA: 4
       tileB: 0
       observations: 3
-      weight: 0.93834645
+      weight: 0.8991302
       overridden: 1
       memberCount: 4
     - key:
@@ -315,7 +315,7 @@ MonoBehaviour:
       tileA: 4
       tileB: 2
       observations: 4
-      weight: 1.5694779
+      weight: 1.5075183
       overridden: 1
       memberCount: 4
     - key:
@@ -327,7 +327,7 @@ MonoBehaviour:
       tileA: 4
       tileB: 2
       observations: 4
-      weight: 1.7373953
+      weight: 1.6787959
       overridden: 1
       memberCount: 4
     - key:
@@ -339,7 +339,7 @@ MonoBehaviour:
       tileA: 4
       tileB: 3
       observations: 4
-      weight: 1.5881045
+      weight: 1.5289621
       overridden: 1
       memberCount: 4
     - key:
@@ -375,7 +375,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 7
       observations: 1
-      weight: 0.25472447
+      weight: 0.23728888
       overridden: 1
       memberCount: 12
     - key:
@@ -387,7 +387,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 0
       observations: 39
-      weight: 1.8401307
+      weight: 1.5723808
       overridden: 1
       memberCount: 24
     - key:
@@ -399,7 +399,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 7
       observations: 2
-      weight: 0.16729549
+      weight: 0.15953973
       overridden: 1
       memberCount: 12
     - key:
@@ -411,7 +411,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 7
       observations: 2
-      weight: 0.18284597
+      weight: 0.15867521
       overridden: 1
       memberCount: 12
     - key:
@@ -423,7 +423,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 7
       observations: 1
-      weight: 0.09108255
+      weight: 0.07738382
       overridden: 1
       memberCount: 12
     - key:
@@ -435,7 +435,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 6
       observations: 4
-      weight: 1.1395975
+      weight: 1.0287768
       overridden: 1
       memberCount: 24
     - key:
@@ -447,7 +447,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 6
       observations: 5
-      weight: 0.8467344
+      weight: 0.7593417
       overridden: 1
       memberCount: 24
     - key:
@@ -459,7 +459,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 14
       observations: 1
-      weight: 34.82007
+      weight: 495.71436
       overridden: 1
       memberCount: 24
     - key:
@@ -471,7 +471,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 8
       observations: 29
-      weight: 0.9498201
+      weight: 0.80527836
       overridden: 1
       memberCount: 24
     - key:
@@ -483,7 +483,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 8
       observations: 1
-      weight: 0.15443128
+      weight: 0.13300374
       overridden: 1
       memberCount: 24
     - key:
@@ -495,7 +495,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 8
       observations: 3
-      weight: 0.7492853
+      weight: 0.66283876
       overridden: 1
       memberCount: 24
     - key:
@@ -507,7 +507,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 0
       observations: 35
-      weight: 1.5429372
+      weight: 1.3125619
       overridden: 1
       memberCount: 24
     - key:
@@ -519,7 +519,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 3
       observations: 1
-      weight: 5.7488794
+      weight: 5.9271827
       overridden: 1
       memberCount: 4
     - key:
@@ -531,8 +531,8 @@ MonoBehaviour:
       tileA: 7
       tileB: 3
       observations: 1
-      weight: 1
-      overridden: 0
+      weight: 1.037568
+      overridden: 1
       memberCount: 4
     - key:
         tileA: 489a040ce9a2e4b7592984bb8d91dee5
@@ -543,7 +543,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 9
       observations: 2
-      weight: 0.54005665
+      weight: 0.4919671
       overridden: 1
       memberCount: 4
     - key:
@@ -555,7 +555,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 18
       observations: 1
-      weight: 0.234087
+      weight: 0.2325838
       overridden: 1
       memberCount: 4
     - key:
@@ -567,8 +567,8 @@ MonoBehaviour:
       tileA: 7
       tileB: 18
       observations: 1
-      weight: 1
-      overridden: 0
+      weight: 1.1036718
+      overridden: 1
       memberCount: 4
     - key:
         tileA: 489a040ce9a2e4b7592984bb8d91dee5
@@ -579,7 +579,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 3
       observations: 1
-      weight: 3.4805748
+      weight: 3.4281173
       overridden: 1
       memberCount: 4
     - key:
@@ -591,7 +591,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 9
       observations: 1
-      weight: 0.290548
+      weight: 0.2677726
       overridden: 1
       memberCount: 4
     - key:
@@ -603,8 +603,8 @@ MonoBehaviour:
       tileA: 7
       tileB: 17
       observations: 1
-      weight: 1
-      overridden: 0
+      weight: 1.0193334
+      overridden: 1
       memberCount: 4
     - key:
         tileA: 489a040ce9a2e4b7592984bb8d91dee5
@@ -615,7 +615,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 2
       observations: 4
-      weight: 0.69653445
+      weight: 0.6825946
       overridden: 1
       memberCount: 4
     - key:
@@ -627,7 +627,7 @@ MonoBehaviour:
       tileA: 7
       tileB: 9
       observations: 2
-      weight: 1.4352
+      weight: 1.3957837
       overridden: 1
       memberCount: 4
     - key:
@@ -639,7 +639,7 @@ MonoBehaviour:
       tileA: 6
       tileB: 8
       observations: 6
-      weight: 0.39394575
+      weight: 0.346448
       overridden: 1
       memberCount: 12
     - key:
@@ -651,7 +651,7 @@ MonoBehaviour:
       tileA: 6
       tileB: 0
       observations: 6
-      weight: 0.5298157
+      weight: 0.4665874
       overridden: 1
       memberCount: 6
     - key:
@@ -663,7 +663,7 @@ MonoBehaviour:
       tileA: 6
       tileB: 9
       observations: 1
-      weight: 0.711213
+      weight: 0.7618716
       overridden: 1
       memberCount: 1
     - key:
@@ -675,7 +675,7 @@ MonoBehaviour:
       tileA: 6
       tileB: 2
       observations: 1
-      weight: 2.2300558
+      weight: 2.2162886
       overridden: 1
       memberCount: 1
     - key:
@@ -687,7 +687,7 @@ MonoBehaviour:
       tileA: 11
       tileB: 0
       observations: 6
-      weight: 0.9048868
+      weight: 0.87212706
       overridden: 1
       memberCount: 24
     - key:
@@ -699,7 +699,7 @@ MonoBehaviour:
       tileA: 11
       tileB: 14
       observations: 2
-      weight: 1.3428187
+      weight: 1.3693087
       overridden: 1
       memberCount: 24
     - key:
@@ -711,7 +711,7 @@ MonoBehaviour:
       tileA: 11
       tileB: 15
       observations: 4
-      weight: 0.38559678
+      weight: 0.35948777
       overridden: 1
       memberCount: 24
     - key:
@@ -723,7 +723,7 @@ MonoBehaviour:
       tileA: 11
       tileB: 0
       observations: 6
-      weight: 0.7681149
+      weight: 0.73053294
       overridden: 1
       memberCount: 24
     - key:
@@ -735,7 +735,7 @@ MonoBehaviour:
       tileA: 11
       tileB: 11
       observations: 2
-      weight: 0.12003136
+      weight: 0.10748171
       overridden: 1
       memberCount: 24
     - key:
@@ -747,7 +747,7 @@ MonoBehaviour:
       tileA: 11
       tileB: 13
       observations: 6
-      weight: 0.7801359
+      weight: 0.7429242
       overridden: 1
       memberCount: 4
     - key:
@@ -759,8 +759,8 @@ MonoBehaviour:
       tileA: 3
       tileB: 17
       observations: 2
-      weight: 2
-      overridden: 0
+      weight: 1.5925293
+      overridden: 1
       memberCount: 4
     - key:
         tileA: 742c625f6e1564b098c31960258681e0
@@ -771,7 +771,7 @@ MonoBehaviour:
       tileA: 3
       tileB: 2
       observations: 24
-      weight: 2.960974
+      weight: 2.7890491
       overridden: 1
       memberCount: 4
     - key:
@@ -783,7 +783,7 @@ MonoBehaviour:
       tileA: 3
       tileB: 9
       observations: 6
-      weight: 2.2614214
+      weight: 2.1047745
       overridden: 1
       memberCount: 4
     - key:
@@ -795,7 +795,7 @@ MonoBehaviour:
       tileA: 3
       tileB: 0
       observations: 19
-      weight: 1.7379216
+      weight: 1.567523
       overridden: 1
       memberCount: 4
     - key:
@@ -807,7 +807,7 @@ MonoBehaviour:
       tileA: 3
       tileB: 8
       observations: 3
-      weight: 5.0066943
+      weight: 4.999777
       overridden: 1
       memberCount: 4
     - key:
@@ -819,7 +819,7 @@ MonoBehaviour:
       tileA: 3
       tileB: 0
       observations: 20
-      weight: 1.7879345
+      weight: 1.5972011
       overridden: 1
       memberCount: 4
     - key:
@@ -831,7 +831,7 @@ MonoBehaviour:
       tileA: 3
       tileB: 2
       observations: 26
-      weight: 2.634908
+      weight: 2.3906183
       overridden: 1
       memberCount: 4
     - key:
@@ -843,7 +843,7 @@ MonoBehaviour:
       tileA: 3
       tileB: 3
       observations: 18
-      weight: 1.4725738
+      weight: 1.3199319
       overridden: 1
       memberCount: 4
     - key:
@@ -855,7 +855,7 @@ MonoBehaviour:
       tileA: 3
       tileB: 5
       observations: 2
-      weight: 0.6535477
+      weight: 0.6337154
       overridden: 1
       memberCount: 4
     - key:
@@ -867,7 +867,7 @@ MonoBehaviour:
       tileA: 3
       tileB: 5
       observations: 2
-      weight: 0.6180873
+      weight: 0.5989777
       overridden: 1
       memberCount: 4
     - key:
@@ -879,7 +879,7 @@ MonoBehaviour:
       tileA: 9
       tileB: 9
       observations: 3
-      weight: 0.81737506
+      weight: 0.723836
       overridden: 1
       memberCount: 2
     - key:
@@ -891,7 +891,7 @@ MonoBehaviour:
       tileA: 9
       tileB: 8
       observations: 1
-      weight: 0.76372725
+      weight: 0.69942003
       overridden: 1
       memberCount: 4
     - key:
@@ -903,7 +903,7 @@ MonoBehaviour:
       tileA: 9
       tileB: 5
       observations: 1
-      weight: 0.4993357
+      weight: 0.4918099
       overridden: 1
       memberCount: 4
     - key:
@@ -915,7 +915,7 @@ MonoBehaviour:
       tileA: 9
       tileB: 0
       observations: 65
-      weight: 8.676374
+      weight: 7.5839586
       overridden: 1
       memberCount: 4
     - key:
@@ -927,7 +927,7 @@ MonoBehaviour:
       tileA: 9
       tileB: 9
       observations: 12
-      weight: 1.3895667
+      weight: 1.1870337
       overridden: 1
       memberCount: 1
     - key:
@@ -939,7 +939,7 @@ MonoBehaviour:
       tileA: 9
       tileB: 8
       observations: 8
-      weight: 2.3770719
+      weight: 2.3003955
       overridden: 1
       memberCount: 2
     - key:
@@ -951,7 +951,7 @@ MonoBehaviour:
       tileA: 9
       tileB: 2
       observations: 12
-      weight: 3.5402374
+      weight: 3.3756933
       overridden: 1
       memberCount: 1
     - key:
@@ -963,7 +963,7 @@ MonoBehaviour:
       tileA: 17
       tileB: 17
       observations: 39
-      weight: 5.530636
+      weight: 5.014211
       overridden: 1
       memberCount: 2
     - key:
@@ -975,7 +975,7 @@ MonoBehaviour:
       tileA: 17
       tileB: 2
       observations: 30
-      weight: 1.9062295
+      weight: 1.7430308
       overridden: 1
       memberCount: 4
     - key:
@@ -987,8 +987,8 @@ MonoBehaviour:
       tileA: 17
       tileB: 8
       observations: 1
-      weight: 1
-      overridden: 0
+      weight: 0.9789018
+      overridden: 1
       memberCount: 2
     - key:
         tileA: 824744308d11d41c1b8e2433eba23200
@@ -999,7 +999,7 @@ MonoBehaviour:
       tileA: 17
       tileB: 18
       observations: 2
-      weight: 0.234087
+      weight: 0.22855377
       overridden: 1
       memberCount: 1
     - key:
@@ -1011,7 +1011,7 @@ MonoBehaviour:
       tileA: 17
       tileB: 0
       observations: 25
-      weight: 2.385758
+      weight: 2.130913
       overridden: 1
       memberCount: 1
     - key:
@@ -1023,7 +1023,7 @@ MonoBehaviour:
       tileA: 17
       tileB: 2
       observations: 29
-      weight: 2.543195
+      weight: 2.2899213
       overridden: 1
       memberCount: 1
     - key:
@@ -1035,7 +1035,7 @@ MonoBehaviour:
       tileA: 14
       tileB: 0
       observations: 2
-      weight: 1.6209598
+      weight: 1.6543726
       overridden: 1
       memberCount: 24
     - key:
@@ -1047,7 +1047,7 @@ MonoBehaviour:
       tileA: 14
       tileB: 8
       observations: 1
-      weight: 0.39786938
+      weight: 0.39075553
       overridden: 1
       memberCount: 24
     - key:
@@ -1059,7 +1059,7 @@ MonoBehaviour:
       tileA: 14
       tileB: 15
       observations: 1
-      weight: 0.38229674
+      weight: 0.36928922
       overridden: 1
       memberCount: 24
     - key:
@@ -1071,7 +1071,7 @@ MonoBehaviour:
       tileA: 14
       tileB: 15
       observations: 1
-      weight: 0.42248872
+      weight: 0.41012782
       overridden: 1
       memberCount: 24
     - key:
@@ -1083,7 +1083,7 @@ MonoBehaviour:
       tileA: 14
       tileB: 12
       observations: 1
-      weight: 1.5469861
+      weight: 5.6440277
       overridden: 1
       memberCount: 4
     - key:
@@ -1095,7 +1095,7 @@ MonoBehaviour:
       tileA: 14
       tileB: 12
       observations: 2
-      weight: 1.8851177
+      weight: 2.0105033
       overridden: 1
       memberCount: 4
     - key:
@@ -1107,7 +1107,7 @@ MonoBehaviour:
       tileA: 15
       tileB: 0
       observations: 9
-      weight: 0.28313103
+      weight: 0.24560064
       overridden: 1
       memberCount: 6
     - key:
@@ -1119,7 +1119,7 @@ MonoBehaviour:
       tileA: 15
       tileB: 0
       observations: 9
-      weight: 0.30976892
+      weight: 0.272144
       overridden: 1
       memberCount: 6
     - key:
@@ -1131,7 +1131,7 @@ MonoBehaviour:
       tileA: 15
       tileB: 15
       observations: 7
-      weight: 0.099101976
+      weight: 0.08121309
       overridden: 1
       memberCount: 12
     - key:
@@ -1143,7 +1143,7 @@ MonoBehaviour:
       tileA: 15
       tileB: 2
       observations: 5
-      weight: 0.5519634
+      weight: 0.5175327
       overridden: 1
       memberCount: 4
     - key:
@@ -1155,7 +1155,7 @@ MonoBehaviour:
       tileA: 15
       tileB: 12
       observations: 6
-      weight: 1.6295184
+      weight: 1.6284506
       overridden: 1
       memberCount: 4
     - key:
@@ -1167,7 +1167,7 @@ MonoBehaviour:
       tileA: 15
       tileB: 12
       observations: 5
-      weight: 1.2422868
+      weight: 1.2377946
       overridden: 1
       memberCount: 4
     - key:
@@ -1179,7 +1179,7 @@ MonoBehaviour:
       tileA: 12
       tileB: 0
       observations: 16
-      weight: 5.5194855
+      weight: 5.628161
       overridden: 1
       memberCount: 8
     - key:
@@ -1191,7 +1191,7 @@ MonoBehaviour:
       tileA: 12
       tileB: 12
       observations: 4
-      weight: 0.7996541
+      weight: 0.7885287
       overridden: 1
       memberCount: 4
     - key:
@@ -1203,7 +1203,7 @@ MonoBehaviour:
       tileA: 12
       tileB: 2
       observations: 4
-      weight: 2.715406
+      weight: 2.8276134
       overridden: 1
       memberCount: 4
     - key:
@@ -1215,7 +1215,7 @@ MonoBehaviour:
       tileA: 13
       tileB: 13
       observations: 1
-      weight: 0.0059639295
+      weight: 0.004435093
       overridden: 1
       memberCount: 2
     - key:
@@ -1227,7 +1227,7 @@ MonoBehaviour:
       tileA: 13
       tileB: 0
       observations: 2
-      weight: 0.058625415
+      weight: 0.047790788
       overridden: 1
       memberCount: 1
     - key:
@@ -1239,7 +1239,7 @@ MonoBehaviour:
       tileA: 13
       tileB: 0
       observations: 2
-      weight: 0.031034715
+      weight: 0.025299154
       overridden: 1
       memberCount: 1
     - key:
@@ -1251,7 +1251,7 @@ MonoBehaviour:
       tileA: 8
       tileB: 8
       observations: 4
-      weight: 0.4599516
+      weight: 0.41376862
       overridden: 1
       memberCount: 6
     - key:
@@ -1263,7 +1263,7 @@ MonoBehaviour:
       tileA: 8
       tileB: 8
       observations: 2
-      weight: 0.54050636
+      weight: 0.5057053
       overridden: 1
       memberCount: 6
     - key:
@@ -1275,7 +1275,7 @@ MonoBehaviour:
       tileA: 8
       tileB: 16
       observations: 2
-      weight: 0.8194107
+      weight: 0.9799837
       overridden: 1
       memberCount: 12
     - key:
@@ -1287,7 +1287,7 @@ MonoBehaviour:
       tileA: 8
       tileB: 0
       observations: 93
-      weight: 2.23019
+      weight: 1.8512542
       overridden: 1
       memberCount: 12
     - key:
@@ -1299,7 +1299,7 @@ MonoBehaviour:
       tileA: 8
       tileB: 2
       observations: 4
-      weight: 0.54018396
+      weight: 0.49963295
       overridden: 1
       memberCount: 2
     - key:
@@ -1311,7 +1311,7 @@ MonoBehaviour:
       tileA: 8
       tileB: 8
       observations: 16
-      weight: 0.38130823
+      weight: 0.32118273
       overridden: 1
       memberCount: 3
     - key:
@@ -1323,8 +1323,8 @@ MonoBehaviour:
       tileA: 8
       tileB: 18
       observations: 1
-      weight: 1
-      overridden: 0
+      weight: 1.1724906
+      overridden: 1
       memberCount: 4
     - key:
         tileA: cc6f307407abe4743b2d4223a0008e9a
@@ -1335,8 +1335,8 @@ MonoBehaviour:
       tileA: 8
       tileB: 18
       observations: 1
-      weight: 1
-      overridden: 0
+      weight: 0.96352476
+      overridden: 1
       memberCount: 1
     - key:
         tileA: d067016945efe40d5929447f19f0cea3
@@ -1347,7 +1347,7 @@ MonoBehaviour:
       tileA: 5
       tileB: 0
       observations: 2
-      weight: 0.8950332
+      weight: 0.8735932
       overridden: 1
       memberCount: 4
     - key:
@@ -1359,7 +1359,7 @@ MonoBehaviour:
       tileA: 5
       tileB: 0
       observations: 2
-      weight: 0.61738527
+      weight: 0.5982973
       overridden: 1
       memberCount: 4
     - key:
@@ -1371,7 +1371,7 @@ MonoBehaviour:
       tileA: 5
       tileB: 2
       observations: 2
-      weight: 0.61738527
+      weight: 0.5982973
       overridden: 1
       memberCount: 4
     - key:
@@ -1383,7 +1383,7 @@ MonoBehaviour:
       tileA: 5
       tileB: 0
       observations: 1
-      weight: 0.2512092
+      weight: 0.24401645
       overridden: 1
       memberCount: 4
     - key:
@@ -1395,7 +1395,7 @@ MonoBehaviour:
       tileA: 16
       tileB: 0
       observations: 8
-      weight: 3.0637343
+      weight: 3.67268
       overridden: 1
       memberCount: 24
     - key:
@@ -1407,7 +1407,7 @@ MonoBehaviour:
       tileA: 16
       tileB: 0
       observations: 2
-      weight: 1.0234399
+      weight: 3.766713
       overridden: 1
       memberCount: 6
     - key:
@@ -1419,7 +1419,7 @@ MonoBehaviour:
       tileA: 2
       tileB: 2
       observations: 405
-      weight: 12.519213
+      weight: 11.1902895
       overridden: 1
       memberCount: 2
     - key:
@@ -1431,7 +1431,7 @@ MonoBehaviour:
       tileA: 2
       tileB: 2
       observations: 65
-      weight: 2.165585
+      weight: 1.9673275
       overridden: 1
       memberCount: 1
     - key:
@@ -1443,7 +1443,7 @@ MonoBehaviour:
       tileA: 2
       tileB: 0
       observations: 76
-      weight: 1.4697732
+      weight: 1.2716613
       overridden: 1
       memberCount: 1
     - key:
@@ -1455,7 +1455,7 @@ MonoBehaviour:
       tileA: 18
       tileB: 0
       observations: 12
-      weight: 1.5419741
+      weight: 1.4036113
       overridden: 1
       memberCount: 4
     - key:
@@ -1467,7 +1467,7 @@ MonoBehaviour:
       tileA: 18
       tileB: 18
       observations: 2
-      weight: 0.14568694
+      weight: 0.13059255
       overridden: 1
       memberCount: 1
     - key:
@@ -1479,7 +1479,7 @@ MonoBehaviour:
       tileA: 0
       tileB: 0
       observations: 3253
-      weight: 95.88553
+      weight: 85.54733
       overridden: 1
       memberCount: 3
     orientationVariant: 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000001000000ffffffffffffffff0100000001000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0100000001000000ffffffffffffffff0100000001000000ffffffffffffffff0200000002000000ffffffffffffffff0200000002000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0200000002000000ffffffffffffffff0200000002000000ffffffffffffffff03000000ffffffffffffffffffffffffffffffff04000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff05000000ffffffffffffffff06000000ffffffffffffffffffffffff07000000ffffffffffffffffffffffffffffffff08000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff09000000ffffffffffffffff0a000000ffffffffffffffffffffffff0b000000ffffffffffffffffffffffffffffffff0c000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d000000ffffffffffffffff0e000000ffffffffffffffffffffffff0f000000ffffffffffffffff0f000000ffffffff0f0000000f000000ffffffffffffffff1000000010000000ffffffff10000000ffffffffffffffff10000000ffffffff1100000011000000ffffffff11000000ffffffffffffffff1100000011000000ffffffffffffffff11000000ffffffff1100000011000000ffffffff10000000ffffffffffffffff10000000ffffffff1000000010000000ffffffffffffffff0f0000000f000000ffffffff0f000000ffffffffffffffff0f00000012000000ffffffffffffffff13000000ffffffff1400000015000000ffffffffffffffff1600000017000000ffffffff18000000ffffffffffffffff19000000ffffffff1a0000001b000000ffffffff1c000000ffffffffffffffff1d0000001a000000ffffffffffffffff1b000000ffffffff1c0000001d000000ffffffff18000000ffffffffffffffff19000000ffffffff1600000017000000ffffffffffffffff1300000012000000ffffffff15000000ffffffffffffffff140000001e000000ffffffffffffffff1e000000ffffffff1e0000001e000000ffffffffffffffff1f0000001f000000ffffffff1f000000ffffffffffffffff1f000000ffffffff1e0000001e000000ffffffff1e000000ffffffffffffffff1e0000001f000000ffffffffffffffff1f000000ffffffff1f0000001f000000ffffffff20000000ffffffffffffffff20000000ffffffff2000000020000000ffffffffffffffff2000000020000000ffffffff20000000ffffffffffffffff200000002100000021000000ffffffffffffffff2100000021000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2100000021000000ffffffffffffffff2100000021000000ffffffffffffffff22000000ffffffffffffffff23000000ffffffff2400000025000000ffffffffffffffff2600000027000000ffffffff28000000ffffffffffffffff29000000ffffffff2a0000002b000000ffffffff2c000000ffffffffffffffff2d0000002e000000ffffffffffffffff2f000000ffffffff3000000031000000ffffffff32000000ffffffffffffffff33000000ffffffff3400000035000000ffffffffffffffff3600000037000000ffffffff38000000ffffffffffffffff390000003a000000ffffffffffffffff3b000000ffffffff3c0000003d000000ffffffffffffffff3e0000003f000000ffffffff40000000ffffffffffffffff41000000ffffffff4200000043000000ffffffff44000000ffffffffffffffff4500000046000000ffffffffffffffff47000000ffffffff4800000049000000ffffffff4a000000ffffffffffffffff4b000000ffffffff4c0000004d000000ffffffffffffffff4e0000004f000000ffffffff50000000ffffffffffffffff510000005200000053000000ffffffffffffffff5400000055000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5200000053000000ffffffffffffffff5400000055000000ffffffffffffffff56000000ffffffffffffffffffffffffffffffff56000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff56000000ffffffffffffffff56000000ffffffffffffffffffffffff57000000ffffffffffffffff58000000ffffffff590000005a000000ffffffffffffffff5b0000005c000000ffffffff5d000000ffffffffffffffff5e000000ffffffff5f00000060000000ffffffff61000000ffffffffffffffff6200000063000000ffffffffffffffff64000000ffffffff6500000066000000ffffffff67000000ffffffffffffffff68000000ffffffff690000006a000000ffffffffffffffff6b0000006c000000ffffffff6d000000ffffffffffffffff6e0000006f000000ffffffffffffffff70000000ffffffff700000006f000000ffffffffffffffff700000006f000000ffffffff6f000000ffffffffffffffff70000000ffffffff7100000072000000ffffffff71000000ffffffffffffffff7200000073000000ffffffffffffffff73000000ffffffff7400000074000000ffffffff71000000ffffffffffffffff72000000ffffffff7100000072000000ffffffffffffffff7300000073000000ffffffff74000000ffffffffffffffff7400000075000000ffffffffffffffff76000000ffffffff7500000076000000ffffffffffffffff7700000077000000ffffffff78000000ffffffffffffffff78000000ffffffff790000007a000000ffffffff7a000000ffffffffffffffff790000007a000000ffffffffffffffff79000000ffffffff790000007a000000ffffffff77000000ffffffffffffffff77000000ffffffff7800000078000000ffffffffffffffff7500000076000000ffffffff75000000ffffffffffffffff760000007b0000007b000000ffffffffffffffff7b0000007b000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7b0000007b000000ffffffffffffffff7b0000007b000000ffffffffffffffff7c0000007c000000ffffffffffffffff7c0000007c000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7c0000007c000000ffffffffffffffff7c0000007c000000ffffffffffffffffi
@@ -1514,4 +1514,4 @@ MonoBehaviour:
       tile: 14
       cells: 10020000a9020000i
       faces: 32
-  sourceHash: 8436bca10230dd3c
+  sourceHash: dbff0b809aad814f
