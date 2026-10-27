@@ -99,11 +99,11 @@ namespace Wfc.Editor
         /// <summary>Ways to keep a generated result: as painted cells, as a chunk asset or as a new sample.</summary>
         private static void DrawResultActions(WfcGenerator generator)
         {
-            bool hasResult = generator.Chunk.Generated != null && generator.Solver != null && generator.Solver.Status == SolverStatus.Done;
+            bool hasResult = generator.Result != null && generator.Solver != null && generator.Solver.Status == SolverStatus.Done;
             using (new EditorGUILayout.HorizontalScope())
             using (new EditorGUI.DisabledScope(!hasResult))
             {
-                if (GUILayout.Button(new GUIContent("Keep Result", "Turns the generated tiles into painted cells of the chunk, so they're saved and can be edited.")))
+                if (GUILayout.Button(new GUIContent("Keep Result", "Turns the generated tiles into cells of the chunk, so they're saved and can be edited.")))
                 {
                     Undo.RecordObject(generator.Chunk, "Keep Generated Tiles");
                     generator.KeepResult();

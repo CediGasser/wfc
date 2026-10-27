@@ -9,12 +9,13 @@ namespace Wfc.Authoring
     /// A box of tiles: a size, the <see cref="TileSet"/> its cells refer to and, per cell, a tile in an orientation or
     /// nothing. The same component holds a ruleset sample, the area a generator fills (painted cells are kept) or any
     /// other arrangement. Its transform is the grid: cell (x, y, z) is centred at local position (x, y, z).
-    /// Besides the authored cells, which are saved with the scene, a chunk can hold a generated layer that is never
-    /// saved: what a generator produced. The chunk only holds data; <see cref="ChunkView"/> shows it.
+    /// Its cells are saved with the scene and form the topmost layer (<see cref="IChunkLayer"/>); other components,
+    /// such as a generator's result, add layers underneath. The chunk only holds data; <see cref="ChunkView"/> shows
+    /// the layers.
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("WFC/Chunk")]
-    public sealed class Chunk : MonoBehaviour
+    public sealed class Chunk : MonoBehaviour, IChunkLayer
     {
         /// <summary>Passed to the change events when every cell may have changed.</summary>
         public const int AllCells = -1;
@@ -22,15 +23,10 @@ namespace Wfc.Authoring
         [SerializeField] private TileSet tileSet;
         [SerializeField] private ChunkData cells = new ChunkData(new int3(8, 4, 8));
 
-        [NonSerialized] private ChunkData generated;
-
-        /// <summary>Raised when authored cells change, with the cell index or <see cref="AllCells"/>.</summary>
+        /// <summary>Raised when cells change, with the cell index or <see cref="AllCells"/>.</summary>
         public event Action<int> Changed;
 
-        /// <summary>Raised when generated cells change, with the cell index or <see cref="AllCells"/>.</summary>
-        public event Action<int> GeneratedChanged;
-
-        /// <summary>Raised when the authored cells of any chunk change, e.g. for editor tooling that analyses samples.</summary>
+        /// <summary>Raised when the cells of any chunk change, e.g. for editor tooling that analyses samples.</summary>
         public static event Action<Chunk> AnyChanged;
 
         public TileSet TileSet
@@ -47,11 +43,18 @@ namespace Wfc.Authoring
 
         public int CellCount => cells.CellCount;
 
-        /// <summary>The authored cells. Read them freely, but change them through the chunk so listeners are notified.</summary>
+        /// <summary>The saved cells. Read them freely, but change them through the chunk so listeners are notified.</summary>
         public ChunkData Cells => cells;
 
-        /// <summary>The generated layer, or null if nothing was generated since it was last cleared.</summary>
-        public ChunkData Generated => generated;
+        public int LayerOrder => 0;
+
+        public bool IsLayerVisible => true;
+
+        public int GetTile(int cell, out Orientation orientation)
+        {
+            orientation = cells.GetOrientation(cell);
+            return cells.GetTile(cell);
+        }
 
         /// <summary>The definition of a tile index, or null for empty cells, empty slots and chunks without a tile set.</summary>
         public TileDefinition GetDefinition(int tile) => tileSet != null ? tileSet[tile] : null;
@@ -76,12 +79,7 @@ namespace Wfc.Authoring
         /// <summary>Replaces size and cells with a copy of <paramref name="data"/>; the tiles must refer to this chunk's tile set.</summary>
         public void SetCells(ChunkData data)
         {
-            bool resized = !data.Size.Equals(cells.Size);
             cells = data.Clone();
-            if (resized)
-            {
-                ClearGenerated();
-            }
             NotifyAll();
         }
 
@@ -89,87 +87,10 @@ namespace Wfc.Authoring
         public void Resize(int3 size, int3 offset)
         {
             cells = cells.Resized(size, offset);
-            ClearGenerated();
             NotifyAll();
         }
 
-        /// <summary>
-        /// The tile a cell shows: the authored one if there is one, else the generated one (if
-        /// <paramref name="includeGenerated"/>), else <see cref="ChunkData.Empty"/>.
-        /// </summary>
-        public int GetShownTile(int cell, bool includeGenerated, out Orientation orientation, out bool isGenerated)
-        {
-            isGenerated = false;
-            if (!cells.IsEmpty(cell))
-            {
-                orientation = cells.GetOrientation(cell);
-                return cells.GetTile(cell);
-            }
-            if (includeGenerated && generated != null && !generated.IsEmpty(cell))
-            {
-                isGenerated = true;
-                orientation = generated.GetOrientation(cell);
-                return generated.GetTile(cell);
-            }
-            orientation = Orientation.Identity;
-            return ChunkData.Empty;
-        }
-
-        /// <summary>The generated layer, created empty if there is none. Write into it, then call <see cref="NotifyGenerated(int)"/>.</summary>
-        public ChunkData GetOrCreateGenerated()
-        {
-            if (generated == null || !generated.Size.Equals(cells.Size))
-            {
-                generated = new ChunkData(cells.Size);
-            }
-            return generated;
-        }
-
-        public void NotifyGenerated(int cell) => GeneratedChanged?.Invoke(cell);
-
-        public void NotifyGenerated(IEnumerable<int> changedCells)
-        {
-            foreach (int cell in changedCells)
-            {
-                GeneratedChanged?.Invoke(cell);
-            }
-        }
-
-        public void ClearGenerated()
-        {
-            if (generated != null)
-            {
-                generated = null;
-                GeneratedChanged?.Invoke(AllCells);
-            }
-        }
-
-        /// <summary>
-        /// Turns the generated tiles into authored ones: copies them into the empty authored cells and clears the
-        /// generated layer. Returns the number of cells filled.
-        /// </summary>
-        public int KeepGenerated()
-        {
-            if (generated == null)
-            {
-                return 0;
-            }
-            int kept = 0;
-            for (int cell = 0; cell < cells.CellCount; cell++)
-            {
-                if (cells.IsEmpty(cell) && !generated.IsEmpty(cell))
-                {
-                    cells.Set(cell, generated.GetTile(cell), generated.GetOrientation(cell));
-                    kept++;
-                }
-            }
-            generated = null;
-            NotifyAll();
-            GeneratedChanged?.Invoke(AllCells);
-            return kept;
-        }
-
-        /// <summary>Stores a copy of the authored cells in <paramref name="asset"/>.</summary>
+        /// <summary>Stores a copy of the cells in <paramref name="asset"/>.</summary>
         public void SaveTo(ChunkAsset asset) => asset.Set(tileSet, cells);
 
         /// <summary>
@@ -242,6 +163,7 @@ namespace Wfc.Authoring
         {
             Changed?.Invoke(cell);
             AnyChanged?.Invoke(this);
+            ChunkLayers.Notify(this, cell);
         }
 
         private void NotifyAll() => Notify(AllCells);
@@ -250,10 +172,6 @@ namespace Wfc.Authoring
         {
             cells ??= new ChunkData();
             cells.Validate();
-            if (generated != null && !generated.Size.Equals(cells.Size))
-            {
-                generated = null;
-            }
 #if UNITY_EDITOR
             // Inspector edits and Undo arrive here. Listeners may create or destroy objects, which isn't allowed
             // during OnValidate, so notify them afterwards.

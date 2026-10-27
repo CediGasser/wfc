@@ -55,7 +55,7 @@ namespace Wfc.Editor
             }
         }
 
-        /// <summary>The orientation the palette tile is placed in; Alt+1..4 rotate it while no cell is selected.</summary>
+        /// <summary>The orientation the palette tile is placed in; R, T and M turn it while no cell is selected.</summary>
         public static Orientation BrushOrientation
         {
             get => Orientation.FromIndex(instance.brushOrientation);
@@ -237,10 +237,10 @@ namespace Wfc.Editor
             return color;
         }
 
-        /// <summary>The variant a cell shows (authored, else generated), or -1 if it's empty or the rules don't have it.</summary>
+        /// <summary>The variant a cell shows (its own tile, else a generated one), or -1 if it's empty or the rules don't have it.</summary>
         public static int ShownVariant(Chunk chunk, RulesetData rules, int cell)
         {
-            int tile = chunk.GetShownTile(cell, true, out Orientation orientation, out _);
+            int tile = ChunkLayers.GetShownTile(chunk.gameObject, cell, out Orientation orientation, out _);
             return tile < 0 ? -1 : rules.FindVariant(tile, orientation);
         }
     }

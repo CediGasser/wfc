@@ -4,7 +4,10 @@ using Wfc.Authoring;
 
 namespace Wfc.Editor
 {
-    /// <summary>The chunk's bounds, a box per authored cell (clicking one selects the chunk) and the cells selected with the chunk tool.</summary>
+    /// <summary>
+    /// The chunk's bounds, a clickable box per cell that selects the chunk, and while it's selected, outlines of its
+    /// own cells and of the cells selected with the chunk tool.
+    /// </summary>
     public static class ChunkGizmos
     {
         public static readonly Color HighlightColor = new Color(1f, 0.85f, 0.2f, 1f);
@@ -19,7 +22,6 @@ namespace Wfc.Editor
             Gizmos.color = new Color(1f, 1f, 1f, selected ? 0.6f : 0.25f);
             Gizmos.DrawWireCube((size - Vector3.one) * 0.5f, size);
 
-            bool showCells = selected || !chunk.TryGetComponent(out ChunkView view) || view.ShowCellGizmos;
             ChunkData cells = chunk.Cells;
             for (int cell = 0; cell < cells.CellCount; cell++)
             {
@@ -34,16 +36,17 @@ namespace Wfc.Editor
                 // Invisible solid cube: makes the whole cell clickable, even for invisible tiles such as air.
                 Gizmos.color = new Color(color.r, color.g, color.b, 0f);
                 Gizmos.DrawCube(center, Vector3.one * 0.98f);
-                if (!showCells)
+                if (!selected)
                 {
                     continue;
                 }
+                // While selected, outline the chunk's own cells, so they stand apart from generated ones.
                 if (definition == null || !definition.HasModel)
                 {
-                    Gizmos.color = new Color(color.r, color.g, color.b, selected ? 0.18f : 0.07f);
+                    Gizmos.color = new Color(color.r, color.g, color.b, 0.18f);
                     Gizmos.DrawCube(center, Vector3.one * 0.98f);
                 }
-                Gizmos.color = new Color(color.r, color.g, color.b, selected ? 0.6f : 0.35f);
+                Gizmos.color = new Color(color.r, color.g, color.b, 0.6f);
                 Gizmos.DrawWireCube(center, Vector3.one * 0.98f);
             }
 

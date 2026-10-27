@@ -30,12 +30,13 @@ namespace Wfc.Authoring
     /// <summary>
     /// Fills its <see cref="Authoring.Chunk"/> from a baked <see cref="Ruleset"/>, either instantly or animated a few
     /// steps per frame (in Play mode and in the editor). The chunk's painted (authored) cells are kept and everything
-    /// else is generated around them. The result goes into the chunk's generated layer, which isn't saved;
-    /// <see cref="KeepResult"/> turns it into authored cells. Boundaries treat a tile as lying just outside a side.
+    /// else is generated around them. The result is a layer under the chunk's own cells (<see cref="IChunkLayer"/>)
+    /// that isn't saved; disabling the component hides it without losing it, and <see cref="KeepResult"/> turns it
+    /// into the chunk's cells. Boundaries treat a tile as lying just outside a side.
     /// </summary>
     [ExecuteAlways, DisallowMultipleComponent, RequireComponent(typeof(Chunk))]
     [AddComponentMenu("WFC/WFC Generator")]
-    public sealed class WfcGenerator : MonoBehaviour
+    public sealed class WfcGenerator : MonoBehaviour, IChunkLayer
     {
         [Tooltip("Must use the same tile set as the chunk.")]
         [SerializeField] private Ruleset ruleset;
@@ -61,6 +62,8 @@ namespace Wfc.Authoring
 
         private Chunk chunk;
         private WfcSolver solver;
+        // What the solver decided so far, in chunk cells; not saved.
+        private ChunkData result;
         private RulesetData data;
         private double nextStepTime;
         // The painted cells contradict each other or the boundaries, so new seeds can't help.
@@ -103,6 +106,19 @@ namespace Wfc.Authoring
         public IReadOnlyList<int> InvalidPaintedCells => invalidPaintedCells;
 
         public int DecidedCount => solver?.Wave.DecidedCount ?? 0;
+
+        /// <summary>The generated tiles, or null before the first generation and after <see cref="Clear"/>.</summary>
+        public ChunkData Result => result;
+
+        public int LayerOrder => 100;
+
+        public bool IsLayerVisible => isActiveAndEnabled && result != null && result.Size.Equals(Chunk.Size);
+
+        public int GetTile(int cell, out Orientation orientation)
+        {
+            orientation = result.GetOrientation(cell);
+            return result.GetTile(cell);
+        }
 
         /// <summary>
         /// The cell where the generation failed: the one left without any possible tile after the last attempt.
@@ -200,30 +216,36 @@ namespace Wfc.Authoring
         {
             IsAnimating = false;
             solver = null;
-            Chunk.ClearGenerated();
+            result = null;
+            ChunkLayers.Notify(this, Chunk.AllCells);
         }
 
         /// <summary>
-        /// Turns the generated tiles into authored cells of the chunk, so they're saved and can be edited, painted
-        /// over or used as a sample. Returns the number of cells filled.
+        /// Turns the generated tiles into cells of the chunk, so they're saved and can be edited, painted over or used
+        /// as a sample, and forgets the generation. Returns the number of cells filled.
         /// </summary>
         public int KeepResult()
         {
-            IsAnimating = false;
-            solver = null;
-            return Chunk.KeepGenerated();
+            ChunkData output = GetOutput();
+            int kept = output.CountNonEmpty() - Chunk.Cells.CountNonEmpty();
+            Chunk.SetCells(output);
+            Clear();
+            return kept;
         }
 
-        /// <summary>A copy of what the chunk shows: its authored cells, with the generated tiles in the empty ones.</summary>
+        /// <summary>A copy of what the chunk shows: its own cells, with the generated tiles in the empty ones.</summary>
         public ChunkData GetOutput()
         {
             ChunkData output = Chunk.Cells.Clone();
-            ChunkData generated = Chunk.Generated;
-            for (int cell = 0; generated != null && cell < output.CellCount; cell++)
+            if (result == null || !result.Size.Equals(output.Size))
             {
-                if (output.IsEmpty(cell) && !generated.IsEmpty(cell))
+                return output;
+            }
+            for (int cell = 0; cell < output.CellCount; cell++)
+            {
+                if (output.IsEmpty(cell) && !result.IsEmpty(cell))
                 {
-                    output.Set(cell, generated.GetTile(cell), generated.GetOrientation(cell));
+                    output.Set(cell, result.GetTile(cell), result.GetOrientation(cell));
                 }
             }
             return output;
@@ -342,17 +364,29 @@ namespace Wfc.Authoring
             }
         }
 
-        /// <summary>Copies the solver's state of the given cells into the chunk's generated layer.</summary>
+        /// <summary>Copies the solver's state of the given cells into the result.</summary>
         private void WriteCells(IReadOnlyList<int> cells)
         {
-            ChunkBridge.ReadResult(solver, data, Chunk.GetOrCreateGenerated(), cells);
-            Chunk.NotifyGenerated(cells);
+            ChunkBridge.ReadResult(solver, data, GetOrCreateResult(), cells);
+            foreach (int cell in cells)
+            {
+                ChunkLayers.Notify(this, cell);
+            }
         }
 
         private void WriteAll()
         {
-            ChunkBridge.ReadResult(solver, data, Chunk.GetOrCreateGenerated());
-            Chunk.NotifyGenerated(Chunk.AllCells);
+            ChunkBridge.ReadResult(solver, data, GetOrCreateResult());
+            ChunkLayers.Notify(this, Chunk.AllCells);
+        }
+
+        private ChunkData GetOrCreateResult()
+        {
+            if (result == null || !result.Size.Equals(solver.Grid.Size))
+            {
+                result = new ChunkData(solver.Grid.Size);
+            }
+            return result;
         }
 
         private void Update()
@@ -390,14 +424,20 @@ namespace Wfc.Authoring
             }
         }
 
+        private void OnEnable()
+        {
+            // Show a result kept while the component was disabled, and continue an interrupted animation.
+            ChunkLayers.Notify(this, Chunk.AllCells);
+            if (IsAnimating)
+            {
+                RequestUpdate();
+            }
+        }
+
         private void OnDisable()
         {
-            IsAnimating = false;
-            solver = null;
-            if (chunk != null)
-            {
-                chunk.ClearGenerated();
-            }
+            // Hides the result (IsLayerVisible is false now); it comes back when the component is enabled again.
+            ChunkLayers.Notify(this, Chunk.AllCells);
         }
 
         private static void RequestUpdate()

@@ -1,12 +1,15 @@
+using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
 namespace Wfc.Authoring
 {
     /// <summary>
-    /// Shows a <see cref="Chunk"/>: an instance of the tile's model in every non-empty cell (the authored tile, else
-    /// the generated one), kept in sync as cells change. The instances are hidden and never saved, so editing a tile
-    /// definition updates every chunk. Separate from the chunk, so chunks can also exist without any visuals.
+    /// Shows a <see cref="Chunk"/> and every other <see cref="IChunkLayer"/> on its GameObject: per cell, an instance
+    /// of the model of the topmost visible layer's tile, kept in sync as layers change. Disabling a layer component
+    /// (e.g. the generator) hides its tiles. The instances are hidden and never saved, so editing a tile definition
+    /// updates every chunk. Rendering lives here rather than in the layers, so all of them share one renderer that
+    /// can later be swapped, e.g. for instanced rendering of large worlds.
     /// </summary>
     [ExecuteAlways, DisallowMultipleComponent, RequireComponent(typeof(Chunk))]
     [AddComponentMenu("WFC/Chunk View")]
@@ -15,30 +18,14 @@ namespace Wfc.Authoring
         private const string ContainerName = "Tiles (not saved)";
         private const HideFlags VisualFlags = HideFlags.HideAndDontSave;
 
-        [Tooltip("Show the tiles a generator produced for the empty cells.")]
-        [SerializeField] private bool showGenerated = true;
-        [Tooltip("Draw a wireframe around every authored cell in its tile's gizmo colour.")]
-        [SerializeField] private bool showCellGizmos = true;
-
         private Chunk chunk;
+        private List<IChunkLayer> layers = new List<IChunkLayer>();
         private Transform container;
         private GameObject[] shown;
         // Per cell: tile << 6 | orientation of the shown instance, or -1 if nothing is shown.
         private int[] shownKey;
 
         public Chunk Chunk => chunk != null ? chunk : chunk = GetComponent<Chunk>();
-
-        public bool ShowGenerated
-        {
-            get => showGenerated;
-            set
-            {
-                showGenerated = value;
-                SyncAll();
-            }
-        }
-
-        public bool ShowCellGizmos => showCellGizmos;
 
         /// <summary>The hidden object holding the model instances, or null while nothing is shown.</summary>
         public Transform Container => container;
@@ -54,8 +41,7 @@ namespace Wfc.Authoring
         {
             chunk = GetComponent<Chunk>();
             DestroyVisuals();
-            chunk.Changed += OnCellChanged;
-            chunk.GeneratedChanged += OnCellChanged;
+            ChunkLayers.Changed += OnLayerChanged;
             TileDefinition.Changed += OnDefinitionChanged;
             TileSet.Changed += OnTileSetChanged;
             SyncAll();
@@ -63,21 +49,19 @@ namespace Wfc.Authoring
 
         private void OnDisable()
         {
-            if (chunk != null)
-            {
-                chunk.Changed -= OnCellChanged;
-                chunk.GeneratedChanged -= OnCellChanged;
-            }
+            ChunkLayers.Changed -= OnLayerChanged;
             TileDefinition.Changed -= OnDefinitionChanged;
             TileSet.Changed -= OnTileSetChanged;
             DestroyVisuals();
         }
 
-        private void OnValidate() => RebuildDelayed();
-
-        private void OnCellChanged(int cell)
+        private void OnLayerChanged(Component layer, int cell)
         {
-            if (cell == Chunk.AllCells || shown == null || shown.Length != Chunk.CellCount)
+            if (layer == null || layer.gameObject != gameObject)
+            {
+                return;
+            }
+            if (cell == Chunk.AllCells || shown == null || shown.Length != Chunk.CellCount || !layers.Contains(layer as IChunkLayer))
             {
                 SyncAll();
             }
@@ -123,6 +107,8 @@ namespace Wfc.Authoring
             {
                 return;
             }
+            // Layers come and go with their components, so look them up again.
+            layers = ChunkLayers.GetLayers(gameObject);
             int count = Chunk.CellCount;
             if (shown == null || shown.Length != count)
             {
@@ -143,7 +129,7 @@ namespace Wfc.Authoring
             {
                 return;
             }
-            int tile = Chunk.GetShownTile(cell, showGenerated, out Orientation orientation, out _);
+            int tile = ChunkLayers.GetShownTile(layers, cell, out Orientation orientation, out _);
             TileDefinition definition = Chunk.GetDefinition(tile);
             int key = definition != null && definition.Model != null ? (tile << 6) | orientation.Index : -1;
             if (key == shownKey[cell])

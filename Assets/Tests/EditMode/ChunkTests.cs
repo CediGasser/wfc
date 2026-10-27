@@ -5,6 +5,7 @@ using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using Wfc.Authoring;
+using Wfc.Tests.Solver;
 
 namespace Wfc.Tests
 {
@@ -57,6 +58,28 @@ namespace Wfc.Tests
             return chunk;
         }
 
+        /// <summary>
+        /// A generator over a new chunk, with a baked ruleset from <paramref name="rules"/> whose tiles all have a cube
+        /// as model, in the data's tile order.
+        /// </summary>
+        public WfcGenerator Generator(TestRules rules, int3 size, uint seed, out RulesetData data, bool withView = false)
+        {
+            data = rules.Data();
+            TileSet tileSet = TileSet(data.tileNames.Select(name => Definition(name)).ToArray());
+            var ruleset = Track(ScriptableObject.CreateInstance<Ruleset>());
+            ruleset.Set(tileSet, data, "test");
+            var generator = Track(new GameObject("generator")).AddComponent<WfcGenerator>();
+            generator.Ruleset = ruleset;
+            generator.Seed = seed;
+            generator.Chunk.TileSet = tileSet;
+            generator.Chunk.Resize(size, int3.zero);
+            if (withView)
+            {
+                generator.gameObject.AddComponent<ChunkView>();
+            }
+            return generator;
+        }
+
         public void DestroyAll()
         {
             foreach (Object obj in created)
@@ -101,63 +124,34 @@ namespace Wfc.Tests
         }
 
         [Test]
-        public void ResizeKeepsCellsAndDropsTheGeneratedLayer()
+        public void ResizeKeepsCells()
         {
             Chunk chunk = objects.Chunk(objects.TileSet(objects.Definition("a")), new int3(3, 1, 1));
             chunk.SetCell(new int3(2, 0, 0), 0, Orientation.Identity);
-            chunk.GetOrCreateGenerated().Set(0, 0, Orientation.Identity);
 
             chunk.Resize(new int3(4, 2, 1), new int3(1, 1, 0));
 
             Assert.That(chunk.Size, Is.EqualTo(new int3(4, 2, 1)));
             Assert.That(chunk.Cells.GetTile(chunk.Cells.ToIndex(new int3(3, 1, 0))), Is.EqualTo(0));
-            Assert.That(chunk.Generated, Is.Null);
         }
 
         [Test]
-        public void ShownTilePrefersAuthoredCells()
+        public void ShownTilesComeFromTheTopmostLayer()
         {
-            Chunk chunk = objects.Chunk(objects.TileSet(objects.Definition("a"), objects.Definition("b")), new int3(2, 1, 1));
-            chunk.SetCell(0, 0, Orientation.Identity);
-            ChunkData generated = chunk.GetOrCreateGenerated();
-            generated.Set(0, 1, Orientation.Identity);
-            generated.Set(1, 1, Orientation.MirrorX);
+            WfcGenerator generator = objects.Generator(TestRules.Checker(), new int3(3, 1, 1), 1, out RulesetData data);
+            generator.Generate(animate: false);
+            Chunk chunk = generator.Chunk;
+            int painted = 1 - generator.Result.GetTile(0);
+            chunk.SetCell(0, painted, Orientation.Identity);
 
-            Assert.That(chunk.GetShownTile(0, true, out _, out bool firstGenerated), Is.EqualTo(0));
-            Assert.That(firstGenerated, Is.False);
-            Assert.That(chunk.GetShownTile(1, true, out Orientation orientation, out bool secondGenerated), Is.EqualTo(1));
-            Assert.That((orientation, secondGenerated), Is.EqualTo((Orientation.MirrorX, true)));
-            Assert.That(chunk.GetShownTile(1, false, out _, out _), Is.EqualTo(ChunkData.Empty));
-        }
+            Assert.That(ChunkLayers.GetShownTile(chunk.gameObject, 0, out _, out IChunkLayer first), Is.EqualTo(painted));
+            Assert.That(first, Is.SameAs(chunk), "the chunk's own cells are on top");
+            Assert.That(ChunkLayers.GetShownTile(chunk.gameObject, 1, out _, out IChunkLayer second), Is.EqualTo(generator.Result.GetTile(1)));
+            Assert.That(second, Is.SameAs(generator));
 
-        [Test]
-        public void KeepGeneratedOnlyFillsEmptyCells()
-        {
-            Chunk chunk = objects.Chunk(objects.TileSet(objects.Definition("a"), objects.Definition("b")), new int3(3, 1, 1));
-            chunk.SetCell(0, 0, Orientation.Identity);
-            ChunkData generated = chunk.GetOrCreateGenerated();
-            for (int cell = 0; cell < 2; cell++)
-            {
-                generated.Set(cell, 1, Orientation.Identity);
-            }
-
-            Assert.That(chunk.KeepGenerated(), Is.EqualTo(1));
-            Assert.That(chunk.Cells.tiles, Is.EqualTo(new[] { 0, 1, ChunkData.Empty }));
-            Assert.That(chunk.Generated, Is.Null);
-        }
-
-        [Test]
-        public void GeneratedLayerIsNotSaved()
-        {
-            Chunk chunk = objects.Chunk(objects.TileSet(objects.Definition("a")), new int3(2, 1, 1));
-            chunk.SetCell(0, 0, Orientation.Identity);
-            chunk.GetOrCreateGenerated().Set(1, 0, Orientation.Identity);
-
-            // Instantiate copies exactly what would be saved.
-            Chunk copy = objects.Track(Object.Instantiate(chunk.gameObject)).GetComponent<Chunk>();
-
-            Assert.That(copy.Cells.ContentEquals(chunk.Cells), Is.True);
-            Assert.That(copy.Generated, Is.Null);
+            generator.enabled = false;
+            Assert.That(ChunkLayers.GetShownTile(chunk.gameObject, 1, out _, out IChunkLayer none), Is.EqualTo(ChunkData.Empty), "disabled layers are hidden");
+            Assert.That(none, Is.Null);
         }
 
         [Test]
@@ -268,22 +262,38 @@ namespace Wfc.Tests
         }
 
         [Test]
-        public void ShowsGeneratedCellsUnderAuthoredOnes()
+        public void ShowsOtherLayersUnderTheChunksCells()
         {
-            Chunk chunk = objects.Chunk(objects.TileSet(objects.Definition("a"), objects.Definition("b")), new int3(2, 1, 1), withView: true);
-            var view = chunk.GetComponent<ChunkView>();
-            chunk.SetCell(0, 0, Orientation.Identity);
-            ChunkData generated = chunk.GetOrCreateGenerated();
-            generated.Set(0, 1, Orientation.Identity);
-            generated.Set(1, 1, Orientation.Identity);
-            chunk.NotifyGenerated(Chunk.AllCells);
+            WfcGenerator generator = objects.Generator(TestRules.Checker(), new int3(3, 1, 1), 1, out RulesetData data, withView: true);
+            var view = generator.GetComponent<ChunkView>();
+            generator.Generate(animate: false);
+            Chunk chunk = generator.Chunk;
+            chunk.SetCell(0, generator.Result.GetTile(0), Orientation.Identity);
 
-            Assert.That(Shown(view).Select(t => t.name), Is.EquivalentTo(new[] { "a int3(0, 0, 0)", "b int3(1, 0, 0)" }));
-            view.ShowGenerated = false;
+            Assert.That(Shown(view).Length, Is.EqualTo(3), "one painted, two generated");
+            generator.enabled = false;
+            Assert.That(Shown(view).Length, Is.EqualTo(1), "a disabled generator's tiles are hidden");
+            generator.enabled = true;
+            Assert.That(Shown(view).Length, Is.EqualTo(3), "re-enabling shows the same tiles again");
+            Object.DestroyImmediate(generator);
             Assert.That(Shown(view).Length, Is.EqualTo(1));
-            view.ShowGenerated = true;
-            chunk.ClearGenerated();
-            Assert.That(Shown(view).Length, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void PicksUpLayersAddedLater()
+        {
+            TestRules rules = TestRules.Checker();
+            RulesetData data = rules.Data();
+            TileSet tileSet = objects.TileSet(data.tileNames.Select(name => objects.Definition(name)).ToArray());
+            Chunk chunk = objects.Chunk(tileSet, new int3(2, 2, 1), withView: true);
+            var ruleset = objects.Track(ScriptableObject.CreateInstance<Ruleset>());
+            ruleset.Set(tileSet, data, "test");
+
+            var generator = chunk.gameObject.AddComponent<WfcGenerator>();
+            generator.Ruleset = ruleset;
+            generator.Generate(animate: false);
+
+            Assert.That(Shown(chunk.GetComponent<ChunkView>()).Length, Is.EqualTo(4));
         }
 
         [Test]

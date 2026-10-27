@@ -57,7 +57,7 @@ namespace Wfc.Tests
             Assert.That(generator.LastError, Is.Null);
             Assert.That(generator.Solver.Status, Is.EqualTo(SolverStatus.Done));
             Assert.That(generator.DecidedCount, Is.EqualTo(24));
-            Assert.That(generator.Chunk.Generated.CountNonEmpty(), Is.EqualTo(24));
+            Assert.That(generator.Result.CountNonEmpty(), Is.EqualTo(24));
             Assert.That(generator.Chunk.Cells.CountNonEmpty(), Is.Zero, "the result isn't authored");
         }
 
@@ -69,7 +69,7 @@ namespace Wfc.Tests
             for (int cell = 0; cell < 8; cell++)
             {
                 int variant = generator.Solver.GetCollapsedVariant(cell);
-                Assert.That(generator.Chunk.Generated.GetTile(cell), Is.EqualTo(data.variantTile[variant]));
+                Assert.That(generator.Result.GetTile(cell), Is.EqualTo(data.variantTile[variant]));
             }
         }
 
@@ -91,12 +91,12 @@ namespace Wfc.Tests
             generator.StepOnce();
             Assert.That(generator.Steps, Is.EqualTo(1));
             Assert.That(generator.DecidedCount, Is.EqualTo(1));
-            Assert.That(generator.Chunk.Generated.CountNonEmpty(), Is.EqualTo(1));
+            Assert.That(generator.Result.CountNonEmpty(), Is.EqualTo(1));
             generator.StepOnce();
             Assert.That(generator.DecidedCount, Is.EqualTo(2));
             generator.RunToEnd();
             Assert.That(generator.Solver.Status, Is.EqualTo(SolverStatus.Done));
-            Assert.That(generator.Chunk.Generated.CountNonEmpty(), Is.EqualTo(27));
+            Assert.That(generator.Result.CountNonEmpty(), Is.EqualTo(27));
         }
 
         [Test]
@@ -105,7 +105,7 @@ namespace Wfc.Tests
             WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.Checker(), out _), new int3(2, 2, 2), 1);
             generator.Generate(animate: false);
             generator.Clear();
-            Assert.That(generator.Chunk.Generated, Is.Null);
+            Assert.That(generator.Result, Is.Null);
             Assert.That(generator.Solver, Is.Null);
         }
 
@@ -205,6 +205,25 @@ namespace Wfc.Tests
         }
 
         [Test]
+        public void DisablingHidesTheResultWithoutLosingIt()
+        {
+            WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.HeavyLight(), out _), new int3(3, 2, 2), 5);
+            generator.gameObject.AddComponent<ChunkView>();
+            generator.Generate(animate: false);
+            var view = generator.GetComponent<ChunkView>();
+            Assert.That(view.Container.childCount, Is.EqualTo(12));
+            ChunkData output = generator.GetOutput();
+
+            generator.enabled = false;
+            Assert.That(view.Container == null || view.Container.childCount == 0, Is.True, "the result is hidden");
+            Assert.That(generator.Result, Is.Not.Null);
+
+            generator.enabled = true;
+            Assert.That(view.Container.childCount, Is.EqualTo(12));
+            Assert.That(generator.GetOutput().ContentEquals(output), Is.True, "the same result comes back");
+        }
+
+        [Test]
         public void KeepResultTurnsTheResultIntoPaintedCells()
         {
             WfcGenerator generator = CreateGenerator(CreateRuleset(TestRules.HeavyLight(), out _), new int3(3, 2, 2), 5);
@@ -213,7 +232,7 @@ namespace Wfc.Tests
 
             Assert.That(generator.KeepResult(), Is.EqualTo(12));
             Assert.That(generator.Chunk.Cells.ContentEquals(output), Is.True);
-            Assert.That(generator.Chunk.Generated, Is.Null);
+            Assert.That(generator.Result, Is.Null);
             Assert.That(generator.Solver, Is.Null);
 
             // Generating again keeps everything, since every cell is painted now.

@@ -35,14 +35,15 @@ namespace Wfc.Editor
 
         /// <summary>
         /// Applies <paramref name="change"/> (in the chunk's grid) to the tile shown in each cell, each around its own
-        /// cell. A generated tile becomes an authored one in its new orientation.
+        /// cell. A generated tile becomes one of the chunk's own in its new orientation.
         /// </summary>
         public static void TransformCells(Chunk chunk, IEnumerable<int> cells, Orientation change, string undoName)
         {
             Record(chunk, undoName);
+            List<IChunkLayer> layers = ChunkLayers.GetLayers(chunk.gameObject);
             foreach (int cell in cells)
             {
-                int tile = chunk.GetShownTile(cell, true, out Orientation orientation, out _);
+                int tile = ChunkLayers.GetShownTile(layers, cell, out Orientation orientation, out _);
                 if (tile >= 0)
                 {
                     chunk.SetCell(cell, tile, change * orientation);
@@ -51,15 +52,16 @@ namespace Wfc.Editor
             Finish(chunk);
         }
 
-        /// <summary>Turns the generated tiles of the cells into authored ones. Returns how many were kept.</summary>
+        /// <summary>Copies the tiles other layers (e.g. a generator) show in the cells into the chunk. Returns how many were kept.</summary>
         public static int KeepCells(Chunk chunk, IEnumerable<int> cells)
         {
             Record(chunk, "Keep Generated Tiles");
+            List<IChunkLayer> layers = ChunkLayers.GetLayers(chunk.gameObject);
             int kept = 0;
             foreach (int cell in cells)
             {
-                int tile = chunk.GetShownTile(cell, true, out Orientation orientation, out bool generated);
-                if (generated)
+                int tile = ChunkLayers.GetShownTile(layers, cell, out Orientation orientation, out IChunkLayer from);
+                if (tile >= 0 && from is not Chunk)
                 {
                     chunk.SetCell(cell, tile, orientation);
                     kept++;

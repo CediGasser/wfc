@@ -12,7 +12,8 @@ namespace Wfc.Editor
     /// Scene tool for editing the cells of a chunk: samples as well as painted cells of a generator. Click a tile to
     /// select its cell and the face under the mouse, and see a ghost of every tile the rules allow next to that face
     /// ([ and ] cycle, Enter places). Shift+Click places the palette tile, Ctrl/Cmd+Click adds cells to the
-    /// selection, Delete erases the selected cells, Alt+1..4 rotate or mirror them, Esc clears the selection.
+    /// selection, Delete erases the selected cells, R / T / M rotate, tilt or mirror them (see <see cref="ChunkShortcuts"/>),
+    /// Esc clears the selection.
     /// </summary>
     [EditorTool("WFC Chunk Tool", typeof(Chunk))]
     public sealed class ChunkTool : EditorTool
@@ -212,7 +213,7 @@ namespace Wfc.Editor
                 if (delete)
                 {
                     ChunkEditing.ClearCells(chunk, cells);
-                    ChunkToolState.Select(chunk, cells.Where(cell => chunk.GetShownTile(cell, true, out _, out _) >= 0));
+                    ChunkToolState.Select(chunk, cells.Where(cell => ChunkLayers.GetShownTile(chunk.gameObject, cell, out _, out _) >= 0));
                 }
                 else
                 {
@@ -283,9 +284,9 @@ namespace Wfc.Editor
             Matrix4x4 toChunk = chunk.transform.worldToLocalMatrix;
             Vector3 origin = toChunk.MultiplyPoint(worldRay.origin);
             Vector3 direction = toChunk.MultiplyVector(worldRay.direction);
-            bool showGenerated = !chunk.TryGetComponent(out ChunkView view) || view.ShowGenerated;
+            List<IChunkLayer> layers = ChunkLayers.GetLayers(chunk.gameObject);
             ChunkData cells = chunk.Cells;
-            bool Solid(int3 cell) => chunk.GetShownTile(cells.ToIndex(cell), showGenerated, out _, out _) >= 0;
+            bool Solid(int3 cell) => ChunkLayers.GetShownTile(layers, cells.ToIndex(cell), out _, out _) >= 0;
             return ChunkRaycast.Raycast(chunk.Size, origin, direction, Solid, out ChunkRaycast.Hit hit) ? hit : null;
         }
 

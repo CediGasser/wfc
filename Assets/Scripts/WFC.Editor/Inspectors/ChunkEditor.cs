@@ -107,16 +107,7 @@ namespace Wfc.Editor
         private static void DrawStatistics(Chunk chunk)
         {
             ChunkData cells = chunk.Cells;
-            int filled = cells.CountNonEmpty();
-            int generated = 0;
-            if (chunk.Generated != null)
-            {
-                for (int cell = 0; cell < cells.CellCount; cell++)
-                {
-                    generated += cells.IsEmpty(cell) && !chunk.Generated.IsEmpty(cell) ? 1 : 0;
-                }
-            }
-            EditorGUILayout.LabelField("Cells", $"{filled} of {cells.CellCount} filled{(generated > 0 ? $", {generated} generated (not saved)" : "")}");
+            EditorGUILayout.LabelField("Cells", $"{cells.CountNonEmpty()} of {cells.CellCount} filled");
 
             int missing = Enumerable.Range(0, cells.CellCount).Count(cell => !cells.IsEmpty(cell) && chunk.GetDefinition(cells.GetTile(cell)) == null);
             if (chunk.TileSet == null)
@@ -133,14 +124,6 @@ namespace Wfc.Editor
         {
             using (new EditorGUILayout.HorizontalScope())
             {
-                using (new EditorGUI.DisabledScope(chunk.Generated == null))
-                {
-                    if (GUILayout.Button(new GUIContent("Keep Generated", "Turns the generated tiles into authored ones, so they're saved and can be edited.")))
-                    {
-                        Undo.RecordObject(chunk, "Keep Generated Tiles");
-                        chunk.KeepGenerated();
-                    }
-                }
                 using (new EditorGUI.DisabledScope(chunk.Cells.CountNonEmpty() == 0))
                 {
                     if (GUILayout.Button("Clear Cells"))
