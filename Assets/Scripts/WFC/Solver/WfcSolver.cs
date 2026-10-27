@@ -14,13 +14,28 @@ namespace Wfc
         Contradiction,
     }
 
+    /// <summary>How <see cref="WfcSolver.FindNextCell"/> picks the next undecided cell to collapse.</summary>
+    public enum CellHeuristic
+    {
+        /// <summary>
+        /// Lowest Shannon entropy of the remaining weights first: the cells closest to certain. With skewed weights a
+        /// cell left with one common and one rare variant counts as almost decided and goes early.
+        /// </summary>
+        Entropy,
+        /// <summary>
+        /// Lowest sum of the remaining weights first: the cells that lost the most probability mass (a weighted
+        /// "fewest remaining values"). Cells that can still hold a heavy tile go late, whatever else is left.
+        /// </summary>
+        WeightSum,
+    }
+
     /// <summary>
     /// Wave function collapse on a box-shaped grid, driven one observation at a time. All state lives in fields, so it
     /// can be stepped, inspected and reset at any point. A cell with exactly one variant left counts as decided.
     /// </summary>
     public sealed class WfcSolver
     {
-        /// <summary>Tie-break noise added to entropies, small enough to never reorder genuinely different entropies.</summary>
+        /// <summary>Tie-break noise added to cell scores, small enough to never reorder genuinely different scores.</summary>
         private const float NoiseScale = 1e-4f;
 
         private readonly Propagator propagator;
@@ -55,6 +70,9 @@ namespace Wfc
         public CompiledRules Rules { get; }
 
         public WfcGrid Grid { get; }
+
+        /// <summary>How the next cell to collapse is chosen; can be changed at any time.</summary>
+        public CellHeuristic Heuristic { get; set; }
 
         public Wave Wave { get; }
 
@@ -137,27 +155,39 @@ namespace Wfc
         }
 
         /// <summary>
-        /// The undecided cell (more than one variant left) with the lowest entropy. Ties are broken by seeded noise,
-        /// so the same seed always picks the same cell. Returns -1 if every cell is decided.
+        /// The undecided cell (more than one variant left) with the lowest score under <see cref="Heuristic"/>. Ties
+        /// are broken by seeded noise, so the same seed always picks the same cell. Returns -1 if every cell is decided.
         /// </summary>
-        public int FindLowestEntropyCell()
+        public int FindNextCell()
         {
             int best = -1;
-            float bestEntropy = float.MaxValue;
+            float bestScore = float.MaxValue;
             for (int cell = 0; cell < Grid.CellCount; cell++)
             {
                 if (Wave.GetCount(cell) <= 1)
                 {
                     continue;
                 }
-                float entropy = Wave.GetEntropy(cell) + noise[cell];
-                if (entropy < bestEntropy)
+                float score = Score(cell) + noise[cell];
+                if (score < bestScore)
                 {
-                    bestEntropy = entropy;
+                    bestScore = score;
                     best = cell;
                 }
             }
             return best;
+        }
+
+        private float Score(int cell)
+        {
+            switch (Heuristic)
+            {
+                case CellHeuristic.WeightSum:
+                    // log Σw orders like Σw (it's the first term of the entropy) and keeps the noise on the same scale.
+                    return (float)Math.Log(Math.Max(Wave.GetWeightSum(cell), double.Epsilon));
+                default:
+                    return Wave.GetEntropy(cell);
+            }
         }
 
         /// <summary>
@@ -246,7 +276,7 @@ namespace Wfc
         }
 
         /// <summary>
-        /// One observation: find the lowest-entropy cell, collapse it, propagate. The first call also propagates every
+        /// One observation: find the next cell (<see cref="FindNextCell"/>), collapse it, propagate. The first call also propagates every
         /// cell once, so rules that make the grid unsolvable are detected even before anything is collapsed.
         /// Returns <see cref="SolverStatus.Done"/> as soon as every cell is decided (also when that happens through
         /// propagation in this step). Does nothing once the status isn't <see cref="SolverStatus.Running"/>.
@@ -263,7 +293,7 @@ namespace Wfc
                 return Status;
             }
 
-            int target = FindLowestEntropyCell();
+            int target = FindNextCell();
             if (target < 0)
             {
                 Status = SolverStatus.Done;

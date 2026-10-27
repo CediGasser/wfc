@@ -38,7 +38,7 @@ namespace Wfc.Tests.Solver
             WfcSolver solver = Create(TestRules.WeightedConnections(), new int3(4, 4, 4), 3, out RulesetData data);
             int constrained = solver.Grid.ToIndex(new int3(2, 1, 3));
             Assert.That(solver.Constrain(constrained, new[] { TestRules.Variant(data, "a"), TestRules.Variant(data, "b") }), Is.True);
-            Assert.That(solver.FindLowestEntropyCell(), Is.EqualTo(constrained));
+            Assert.That(solver.FindNextCell(), Is.EqualTo(constrained));
         }
 
         [Test]
@@ -46,15 +46,41 @@ namespace Wfc.Tests.Solver
         {
             WfcSolver solver = Create(TestRules.WeightedConnections(), new int3(2, 1, 1), 3, out RulesetData data);
             Assert.That(solver.Constrain(0, new[] { TestRules.Variant(data, "a") }), Is.True);
-            Assert.That(solver.FindLowestEntropyCell(), Is.EqualTo(1), "cell 0 is decided, so cell 1 is the only candidate");
+            Assert.That(solver.FindNextCell(), Is.EqualTo(1), "cell 0 is decided, so cell 1 is the only candidate");
             solver.CollapseCell(1);
-            Assert.That(solver.FindLowestEntropyCell(), Is.EqualTo(-1));
+            Assert.That(solver.FindNextCell(), Is.EqualTo(-1));
+        }
+
+        [Test]
+        public void WeightSumPrefersCellsWithoutHeavyVariants()
+        {
+            var rules = new TestRules();
+            int common = rules.SymmetricTile("common", 10f);
+            int rare1 = rules.SymmetricTile("rare1");
+            int rare2 = rules.SymmetricTile("rare2");
+            int rare3 = rules.SymmetricTile("rare3");
+            int[] all = { common, rare1, rare2, rare3 };
+            foreach (int a in all)
+            {
+                foreach (int b in all.Where(b => b >= a))
+                {
+                    rules.Pair(a, b);
+                }
+            }
+            WfcSolver solver = Create(rules, new int3(4, 1, 1), 3, out RulesetData data);
+            // Cell 1: common or rare1, entropy ≈ 0.30, sum 11. Cell 2: three rare ones, entropy log 3 ≈ 1.10, sum 3.
+            Assert.That(solver.Constrain(1, new[] { TestRules.Variant(data, "common"), TestRules.Variant(data, "rare1") }), Is.True);
+            Assert.That(solver.Constrain(2, new[] { "rare1", "rare2", "rare3" }.Select(n => TestRules.Variant(data, n))), Is.True);
+
+            Assert.That(solver.FindNextCell(), Is.EqualTo(1), "entropy: the nearly certain cell");
+            solver.Heuristic = CellHeuristic.WeightSum;
+            Assert.That(solver.FindNextCell(), Is.EqualTo(2), "weight sum: the cell without the heavy tile");
         }
 
         [Test]
         public void TiesAreBrokenTheSameWayForTheSameSeed()
         {
-            int First(uint seed) => Create(TestRules.HeavyLight(), new int3(6, 6, 6), seed, out _).FindLowestEntropyCell();
+            int First(uint seed) => Create(TestRules.HeavyLight(), new int3(6, 6, 6), seed, out _).FindNextCell();
             Assert.That(First(7), Is.EqualTo(First(7)));
             Assert.That(Enumerable.Range(1, 10).Select(s => First((uint)s)).Distinct().Count(), Is.GreaterThan(1),
                 "different seeds should start at different cells");

@@ -83,6 +83,16 @@ namespace Wfc.Tests.Solver
         }
 
         [Test]
+        public void WeightSumIsUpdatedAfterBans()
+        {
+            RulesetData data = TestRules.HeavyLight().Data();
+            var wave = new Wave(1, new CompiledRules(data));
+            Assert.That(wave.GetWeightSum(0), Is.EqualTo(4.0).Within(Tolerance));
+            wave.Ban(0, TestRules.Variant(data, "heavy"));
+            Assert.That(wave.GetWeightSum(0), Is.EqualTo(1.0).Within(Tolerance));
+        }
+
+        [Test]
         public void DecidedAndEmptyCellsHaveZeroEntropy()
         {
             RulesetData data = TestRules.HeavyLight().Data();

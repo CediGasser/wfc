@@ -44,6 +44,8 @@ namespace Wfc.Authoring
         [SerializeField] private uint seed = 1;
         [Tooltip("Pick a new seed every time Generate is pressed.")]
         [SerializeField] private bool newSeedEachGeneration;
+        [Tooltip("Which cell is collapsed next. Weight Sum decides cells that can still hold a heavy tile (e.g. air) last.")]
+        [SerializeField] private CellHeuristic heuristic;
         [SerializeField, Min(1)] private int stepsPerFrame = 1;
         [Tooltip("Seconds between animation frames; 0 steps every frame.")]
         [SerializeField, Min(0f)] private float stepInterval;
@@ -82,6 +84,12 @@ namespace Wfc.Authoring
         {
             get => seed;
             set => seed = value;
+        }
+
+        public CellHeuristic Heuristic
+        {
+            get => heuristic;
+            set => heuristic = value;
         }
 
         public int MaxAttempts
@@ -313,7 +321,7 @@ namespace Wfc.Authoring
         /// </summary>
         public WfcSolver CreateSolver(CompiledRules rules, RulesetData data, TileSet tileSet, int3 gridSize, uint solverSeed)
         {
-            var created = new WfcSolver(rules, gridSize, solverSeed);
+            var created = new WfcSolver(rules, gridSize, solverSeed) { Heuristic = heuristic };
             for (int d = 0; d < Directions.Count; d++)
             {
                 var side = (Direction)d;

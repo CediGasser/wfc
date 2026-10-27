@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b76555b9ef6549e2b0931ac8326e350, type: 3}
+  m_Name: Slope_UtoL_Straight_Top
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
+  model: {fileID: 8451464221279430284, guid: 5e4d0a377557f4320ad227586080cfd9, type: 3}
+  allowedOrientations: 2
+  customOrientationMask: 1
+  symmetry: 0
+  baseWeight: 0.5
+  gizmoColor: {r: 0.45, g: 0.75, b: 0.35, a: 1}
+  detectedSymmetryMask: 3
+  detectedSymmetrySource: 5e4d0a377557f4320ad227586080cfd9:14789fba2db22e2ec1308075e31053d5

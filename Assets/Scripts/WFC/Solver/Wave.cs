@@ -5,7 +5,7 @@ using Unity.Mathematics;
 namespace Wfc
 {
     /// <summary>
-    /// The remaining possible variants of every cell, one bitset per cell, with entropy kept up to date incrementally
+    /// The remaining possible variants of every cell, one bitset per cell, with entropy and weight sum kept up to date incrementally
     /// as variants are removed. Also records which cells lost variants since the last <see cref="ClearChanged"/>.
     /// </summary>
     public sealed class Wave
@@ -118,6 +118,9 @@ namespace Wfc
             }
             return changed;
         }
+
+        /// <summary>Sum of the remaining variants' weights, kept up to date like the entropy.</summary>
+        public double GetWeightSum(int cell) => sumWeights[cell];
 
         /// <summary>
         /// Shannon entropy (natural log) of the remaining variants' weights: log(Σw) − Σ(w·log w) / Σw.

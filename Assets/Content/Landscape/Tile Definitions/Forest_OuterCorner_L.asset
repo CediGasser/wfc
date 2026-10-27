@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b76555b9ef6549e2b0931ac8326e350, type: 3}
+  m_Name: Forest_OuterCorner_L
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
+  model: {fileID: 5525818267925898761, guid: 28110b786d7934e55a01734e4f582e1e, type: 3}
+  allowedOrientations: 2
+  customOrientationMask: 1
+  symmetry: 0
+  baseWeight: 8
+  gizmoColor: {r: 0.15, g: 0.6, b: 0.25, a: 1}
+  detectedSymmetryMask: 1099511627777
+  detectedSymmetrySource: 28110b786d7934e55a01734e4f582e1e:b385a9762311351bf7c9495f8653e0f8

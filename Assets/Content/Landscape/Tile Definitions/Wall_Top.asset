@@ -16,7 +16,7 @@ MonoBehaviour:
   allowedOrientations: 1
   customOrientationMask: 1
   symmetry: 0
-  baseWeight: 0.03
+  baseWeight: 1
   gizmoColor: {r: 0.95, g: 0.85, b: 0.6, a: 1}
   detectedSymmetryMask: 3
-  detectedSymmetrySource: 59c991c773f1644b3b0d19bbb7812ee3:8f57141cdec8dfe7d9282b50ef8fa769
+  detectedSymmetrySource: 59c991c773f1644b3b0d19bbb7812ee3:d388e0e10b524aa51983475327b165cb
