@@ -1,0 +1,1240 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!29 &1
+OcclusionCullingSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_OcclusionBakeSettings:
+    smallestOccluder: 5
+    smallestHole: 0.25
+    backfaceThreshold: 100
+  m_SceneGUID: 00000000000000000000000000000000
+  m_OcclusionCullingData: {fileID: 0}
+--- !u!104 &2
+RenderSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 10
+  m_Fog: 0
+  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_FogMode: 3
+  m_FogDensity: 0.01
+  m_LinearFogStart: 0
+  m_LinearFogEnd: 300
+  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+  m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+  m_AmbientIntensity: 1
+  m_AmbientMode: 0
+  m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
+  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_HaloStrength: 0.5
+  m_FlareStrength: 1
+  m_FlareFadeSpeed: 3
+  m_HaloTexture: {fileID: 0}
+  m_SpotCookie: {fileID: 10001, guid: 0000000000000000e000000000000000, type: 0}
+  m_DefaultReflectionMode: 0
+  m_DefaultReflectionResolution: 128
+  m_ReflectionBounces: 1
+  m_ReflectionIntensity: 1
+  m_CustomReflection: {fileID: 0}
+  m_Sun: {fileID: 0}
+  m_UseRadianceAmbientProbe: 0
+--- !u!157 &3
+LightmapSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
+  m_GISettings:
+    serializedVersion: 2
+    m_BounceScale: 1
+    m_IndirectOutputScale: 1
+    m_AlbedoBoost: 1
+    m_EnvironmentLightingMode: 0
+    m_EnableBakedLightmaps: 1
+    m_EnableRealtimeLightmaps: 0
+  m_LightmapEditorSettings:
+    serializedVersion: 12
+    m_Resolution: 2
+    m_BakeResolution: 40
+    m_AtlasSize: 1024
+    m_AO: 0
+    m_AOMaxDistance: 1
+    m_CompAOExponent: 1
+    m_CompAOExponentDirect: 0
+    m_ExtractAmbientOcclusion: 0
+    m_Padding: 2
+    m_LightmapParameters: {fileID: 0}
+    m_LightmapsBakeMode: 1
+    m_TextureCompression: 1
+    m_ReflectionCompression: 2
+    m_MixedBakeMode: 2
+    m_BakeBackend: 2
+    m_PVRSampling: 1
+    m_PVRDirectSampleCount: 32
+    m_PVRSampleCount: 512
+    m_PVRBounces: 2
+    m_PVREnvironmentSampleCount: 256
+    m_PVREnvironmentReferencePointCount: 2048
+    m_PVRFilteringMode: 1
+    m_PVRDenoiserTypeDirect: 2
+    m_PVRDenoiserTypeIndirect: 2
+    m_PVRDenoiserTypeAO: 2
+    m_PVRFilterTypeDirect: 0
+    m_PVRFilterTypeIndirect: 0
+    m_PVRFilterTypeAO: 0
+    m_PVREnvironmentMIS: 1
+    m_PVRCulling: 1
+    m_PVRFilteringGaussRadiusDirect: 1
+    m_PVRFilteringGaussRadiusIndirect: 1
+    m_PVRFilteringGaussRadiusAO: 1
+    m_PVRFilteringAtrousPositionSigmaDirect: 0.5
+    m_PVRFilteringAtrousPositionSigmaIndirect: 2
+    m_PVRFilteringAtrousPositionSigmaAO: 1
+    m_ExportTrainingData: 0
+    m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
+  m_LightingDataAsset: {fileID: 20201, guid: 0000000000000000f000000000000000, type: 0}
+  m_LightingSettings: {fileID: 0}
+--- !u!196 &4
+NavMeshSettings:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_BuildSettings:
+    serializedVersion: 3
+    agentTypeID: 0
+    agentRadius: 0.5
+    agentHeight: 2
+    agentSlope: 45
+    agentClimb: 0.4
+    ledgeDropHeight: 0
+    maxJumpAcrossDistance: 0
+    minRegionArea: 2
+    manualCellSize: 0
+    cellSize: 0.16666667
+    manualTileSize: 0
+    tileSize: 256
+    buildHeightMesh: 0
+    maxJobWorkers: 0
+    preserveTilesOutsideBounds: 0
+    debug:
+      m_Flags: 0
+  m_NavMeshData: {fileID: 0}
+--- !u!1 &923354267
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 923354271}
+  - component: {fileID: 923354270}
+  - component: {fileID: 923354269}
+  - component: {fileID: 923354268}
+  m_Layer: 0
+  m_Name: Landscape Generator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &923354268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 923354267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ebbf22abf3bd43cbb33e559cdafcd22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.ChunkView
+--- !u!114 &923354269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 923354267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b36e17be18464fe39837758420095d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.WfcGenerator
+  ruleset: {fileID: 11400000, guid: 3527b640d49664ccab8f94b9e67f325a, type: 2}
+  seed: 2346458226
+  newSeedEachGeneration: 1
+  stepsPerFrame: 1
+  stepInterval: 0
+  maxAttempts: 50
+  generateOnStart: 0
+  showUndecided: 1
+  bottom:
+    mode: 1
+    tile: {fileID: 11400000, guid: a6fdb9b4ca32b4586a1d958b79e09a50, type: 2}
+  top:
+    mode: 1
+    tile: {fileID: 11400000, guid: ffe81c765216c4717bede33a7794f247, type: 2}
+  left:
+    mode: 1
+    tile: {fileID: 11400000, guid: 87beae0acc22746d1847b09d07cbb79a, type: 2}
+  right:
+    mode: 1
+    tile: {fileID: 11400000, guid: 87beae0acc22746d1847b09d07cbb79a, type: 2}
+  back:
+    mode: 1
+    tile: {fileID: 11400000, guid: 87beae0acc22746d1847b09d07cbb79a, type: 2}
+  front:
+    mode: 1
+    tile: {fileID: 11400000, guid: 87beae0acc22746d1847b09d07cbb79a, type: 2}
+--- !u!114 &923354270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 923354267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b44d72f4afe7143c39adde48a2a229e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.Chunk
+  tileSet: {fileID: 11400000, guid: fbe75d47575b94093b623b47b74bab6c, type: 2}
+  cells:
+    size:
+      x: 24
+      y: 4
+      z: 24
+    tiles: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffi
+    orientations: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000y
+--- !u!4 &923354271
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 923354267}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1392838637
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1392838640}
+  - component: {fileID: 1392838639}
+  - component: {fileID: 1392838638}
+  m_Layer: 0
+  m_Name: Main Camera
+  m_TagString: MainCamera
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!81 &1392838638
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1392838637}
+  m_Enabled: 1
+--- !u!20 &1392838639
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1392838637}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 1000
+  field of view: 60
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: -1
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!4 &1392838640
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1392838637}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.30617917, y: 0.36105737, z: -0.12682356, w: 0.87166953}
+  m_LocalPosition: {x: -3.5, y: 17.5, z: -3.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1502405443
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1502405445}
+  - component: {fileID: 1502405444}
+  m_Layer: 0
+  m_Name: Directional Light
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!108 &1502405444
+Light:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1502405443}
+  m_Enabled: 1
+  serializedVersion: 13
+  m_Type: 1
+  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+  m_Intensity: 1
+  m_Range: 10
+  m_SpotAngle: 30
+  m_InnerSpotAngle: 21.802082
+  m_CookieSize2D: {x: 0.5, y: 0.5}
+  m_Shadows:
+    m_Type: 2
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingLayerMask: 1
+  m_Lightmapping: 4
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
+  m_ShapeRadius: 0.025
+  m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
+--- !u!4 &1502405445
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1502405443}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
+  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &1803873237
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1803873239}
+  - component: {fileID: 1803873238}
+  m_Layer: 0
+  m_Name: Landscape Sockets
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1803873238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1803873237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39ddd86047b41479eac9b48567b25d94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.SocketRuleSource
+  ruleset: {fileID: 11400000, guid: 3527b640d49664ccab8f94b9e67f325a, type: 2}
+  overrides:
+  - key:
+      tileA: 0a4b7d08f6f304000a8915466deb6549
+      orientationA: 0
+      direction: 0
+      tileB: 0a4b7d08f6f304000a8915466deb6549
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 0a4b7d08f6f304000a8915466deb6549
+      orientationA: 0
+      direction: 0
+      tileB: 4286fab504c70433fbd3adf152ebfeeb
+      orientationB: 0
+    weight: 3
+  - key:
+      tileA: 0a4b7d08f6f304000a8915466deb6549
+      orientationA: 0
+      direction: 0
+      tileB: 65fcdb2814e4d4aac9a4b53c264e5646
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 0a4b7d08f6f304000a8915466deb6549
+      orientationA: 0
+      direction: 0
+      tileB: 90f31c549d07343e09d5b1551a0ba336
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 0a4b7d08f6f304000a8915466deb6549
+      orientationA: 0
+      direction: 1
+      tileB: 0a4b7d08f6f304000a8915466deb6549
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 0a4b7d08f6f304000a8915466deb6549
+      orientationA: 0
+      direction: 1
+      tileB: 0a4b7d08f6f304000a8915466deb6549
+      orientationB: 5
+    weight: 3
+  - key:
+      tileA: 0a4b7d08f6f304000a8915466deb6549
+      orientationA: 0
+      direction: 1
+      tileB: 4286fab504c70433fbd3adf152ebfeeb
+      orientationB: 40
+    weight: 3
+  - key:
+      tileA: 0a4b7d08f6f304000a8915466deb6549
+      orientationA: 0
+      direction: 1
+      tileB: c5c0367e4af474602a38998ebb6cacf3
+      orientationB: 0
+    weight: 3
+  - key:
+      tileA: 10e68499191a44613ac17b0faf66f2ba
+      orientationA: 0
+      direction: 0
+      tileB: 10e68499191a44613ac17b0faf66f2ba
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 10e68499191a44613ac17b0faf66f2ba
+      orientationA: 0
+      direction: 0
+      tileB: 4195aef6522394f5f9fdb4370962ff4a
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 10e68499191a44613ac17b0faf66f2ba
+      orientationA: 0
+      direction: 0
+      tileB: 462523e3586c2444caa6d1d542743be8
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 10e68499191a44613ac17b0faf66f2ba
+      orientationA: 0
+      direction: 0
+      tileB: 765601aafd7e04bd7ba2b3dde2c7fb2c
+      orientationB: 0
+    weight: 3
+  - key:
+      tileA: 10e68499191a44613ac17b0faf66f2ba
+      orientationA: 0
+      direction: 1
+      tileB: 10e68499191a44613ac17b0faf66f2ba
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 10e68499191a44613ac17b0faf66f2ba
+      orientationA: 0
+      direction: 1
+      tileB: 10e68499191a44613ac17b0faf66f2ba
+      orientationB: 5
+    weight: 3
+  - key:
+      tileA: 10e68499191a44613ac17b0faf66f2ba
+      orientationA: 0
+      direction: 1
+      tileB: 765601aafd7e04bd7ba2b3dde2c7fb2c
+      orientationB: 40
+    weight: 3
+  - key:
+      tileA: 10e68499191a44613ac17b0faf66f2ba
+      orientationA: 0
+      direction: 1
+      tileB: df9f3c509dd0f41a0944f6e243f2c7c5
+      orientationB: 0
+    weight: 3
+  - key:
+      tileA: 4195aef6522394f5f9fdb4370962ff4a
+      orientationA: 0
+      direction: 0
+      tileB: 4195aef6522394f5f9fdb4370962ff4a
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 4195aef6522394f5f9fdb4370962ff4a
+      orientationA: 0
+      direction: 0
+      tileB: 462523e3586c2444caa6d1d542743be8
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 4195aef6522394f5f9fdb4370962ff4a
+      orientationA: 0
+      direction: 0
+      tileB: 765601aafd7e04bd7ba2b3dde2c7fb2c
+      orientationB: 0
+    weight: 3
+  - key:
+      tileA: 4195aef6522394f5f9fdb4370962ff4a
+      orientationA: 0
+      direction: 1
+      tileB: 4195aef6522394f5f9fdb4370962ff4a
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 4195aef6522394f5f9fdb4370962ff4a
+      orientationA: 0
+      direction: 1
+      tileB: 4195aef6522394f5f9fdb4370962ff4a
+      orientationB: 5
+    weight: 3
+  - key:
+      tileA: 4195aef6522394f5f9fdb4370962ff4a
+      orientationA: 0
+      direction: 1
+      tileB: 765601aafd7e04bd7ba2b3dde2c7fb2c
+      orientationB: 41
+    weight: 3
+  - key:
+      tileA: 4286fab504c70433fbd3adf152ebfeeb
+      orientationA: 0
+      direction: 0
+      tileB: 4286fab504c70433fbd3adf152ebfeeb
+      orientationB: 0
+    weight: 3
+  - key:
+      tileA: 4286fab504c70433fbd3adf152ebfeeb
+      orientationA: 0
+      direction: 0
+      tileB: 65fcdb2814e4d4aac9a4b53c264e5646
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 4286fab504c70433fbd3adf152ebfeeb
+      orientationA: 0
+      direction: 0
+      tileB: 90f31c549d07343e09d5b1551a0ba336
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 4286fab504c70433fbd3adf152ebfeeb
+      orientationA: 0
+      direction: 4
+      tileB: 4286fab504c70433fbd3adf152ebfeeb
+      orientationB: 4
+    weight: 3
+  - key:
+      tileA: 4286fab504c70433fbd3adf152ebfeeb
+      orientationA: 0
+      direction: 4
+      tileB: c5c0367e4af474602a38998ebb6cacf3
+      orientationB: 0
+    weight: 3
+  - key:
+      tileA: 4286fab504c70433fbd3adf152ebfeeb
+      orientationA: 0
+      direction: 5
+      tileB: 4286fab504c70433fbd3adf152ebfeeb
+      orientationB: 4
+    weight: 3
+  - key:
+      tileA: 4286fab504c70433fbd3adf152ebfeeb
+      orientationA: 0
+      direction: 5
+      tileB: 65fcdb2814e4d4aac9a4b53c264e5646
+      orientationB: 4
+    weight: 3
+  - key:
+      tileA: 462523e3586c2444caa6d1d542743be8
+      orientationA: 0
+      direction: 0
+      tileB: 462523e3586c2444caa6d1d542743be8
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 462523e3586c2444caa6d1d542743be8
+      orientationA: 0
+      direction: 0
+      tileB: 765601aafd7e04bd7ba2b3dde2c7fb2c
+      orientationB: 0
+    weight: 3
+  - key:
+      tileA: 65fcdb2814e4d4aac9a4b53c264e5646
+      orientationA: 0
+      direction: 0
+      tileB: 65fcdb2814e4d4aac9a4b53c264e5646
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 65fcdb2814e4d4aac9a4b53c264e5646
+      orientationA: 0
+      direction: 0
+      tileB: 90f31c549d07343e09d5b1551a0ba336
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 65fcdb2814e4d4aac9a4b53c264e5646
+      orientationA: 0
+      direction: 1
+      tileB: 65fcdb2814e4d4aac9a4b53c264e5646
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: 65fcdb2814e4d4aac9a4b53c264e5646
+      orientationA: 0
+      direction: 1
+      tileB: 65fcdb2814e4d4aac9a4b53c264e5646
+      orientationB: 5
+    weight: 3
+  - key:
+      tileA: 765601aafd7e04bd7ba2b3dde2c7fb2c
+      orientationA: 0
+      direction: 0
+      tileB: 765601aafd7e04bd7ba2b3dde2c7fb2c
+      orientationB: 0
+    weight: 3
+  - key:
+      tileA: 765601aafd7e04bd7ba2b3dde2c7fb2c
+      orientationA: 0
+      direction: 4
+      tileB: 765601aafd7e04bd7ba2b3dde2c7fb2c
+      orientationB: 4
+    weight: 3
+  - key:
+      tileA: 765601aafd7e04bd7ba2b3dde2c7fb2c
+      orientationA: 0
+      direction: 4
+      tileB: df9f3c509dd0f41a0944f6e243f2c7c5
+      orientationB: 0
+    weight: 3
+  - key:
+      tileA: 765601aafd7e04bd7ba2b3dde2c7fb2c
+      orientationA: 0
+      direction: 5
+      tileB: 765601aafd7e04bd7ba2b3dde2c7fb2c
+      orientationB: 4
+    weight: 3
+  - key:
+      tileA: 90f31c549d07343e09d5b1551a0ba336
+      orientationA: 0
+      direction: 0
+      tileB: 90f31c549d07343e09d5b1551a0ba336
+      orientationB: 1
+    weight: 3
+  - key:
+      tileA: c5c0367e4af474602a38998ebb6cacf3
+      orientationA: 0
+      direction: 0
+      tileB: c5c0367e4af474602a38998ebb6cacf3
+      orientationB: 0
+    weight: 3
+  - key:
+      tileA: df9f3c509dd0f41a0944f6e243f2c7c5
+      orientationA: 0
+      direction: 0
+      tileB: df9f3c509dd0f41a0944f6e243f2c7c5
+      orientationB: 0
+    weight: 3
+  tileSet: {fileID: 11400000, guid: fbe75d47575b94093b623b47b74bab6c, type: 2}
+  sockets:
+  - tile: {fileID: 11400000, guid: 585cf2c27494b42b1827035866ce7658, type: 2}
+    posX: GF|GF
+    negX: GF|GF
+    posY: air
+    negY: ground
+    posZ: GF|GF
+    negZ: GF|GF
+  - tile: {fileID: 11400000, guid: df9f3c509dd0f41a0944f6e243f2c7c5, type: 2}
+    posX: FF|FF
+    negX: FF|FF
+    posY: air
+    negY: ground
+    posZ: FF|FF
+    negZ: FF|FF
+  - tile: {fileID: 11400000, guid: 61e35e20f269b47b5b612ecf043153f7, type: 2}
+    posX: CF|CF
+    negX: CF|CF
+    posY: air
+    negY: ground
+    posZ: CF|CF
+    negZ: CF|CF
+  - tile: {fileID: 11400000, guid: dd6bff24078d642d2aa51bf48d457671, type: 2}
+    posX: WF|WF
+    negX: WF|WF
+    posY: air
+    negY: ground
+    posZ: WF|WF
+    negZ: WF|WF
+  - tile: {fileID: 11400000, guid: 43e5ee7c641cd40c79e89d6a24dc8158, type: 2}
+    posX: GF|WF
+    negX: WF|GF
+    posY: air
+    negY: ground
+    posZ: WF|WF
+    negZ: GF|GF
+  - tile: {fileID: 11400000, guid: e6ff90ba0e6ad43fb9971eea140cf765, type: 2}
+    posX: GF|WF
+    negX: GF|GF
+    posY: air
+    negY: ground
+    posZ: WF|GF
+    negZ: GF|GF
+  - tile: {fileID: 11400000, guid: d3f817008bb18455eba12a87145d8bb3, type: 2}
+    posX: GF|WF
+    negX: WF|WF
+    posY: air
+    negY: ground
+    posZ: WF|WF
+    negZ: WF|GF
+  - tile: {fileID: 11400000, guid: 141ee7e11afb84ddaaf59147541ef000, type: 2}
+    posX: GF|WF
+    negX: GF|WF
+    posY: air
+    negY: ground
+    posZ: WF|GF
+    negZ: WF|GF
+  - tile: {fileID: 11400000, guid: 765601aafd7e04bd7ba2b3dde2c7fb2c, type: 2}
+    posX: GF|FF
+    negX: FF|GF
+    posY: air
+    negY: ground
+    posZ: FF|FF
+    negZ: GF|GF
+  - tile: {fileID: 11400000, guid: 4195aef6522394f5f9fdb4370962ff4a, type: 2}
+    posX: GF|FF
+    negX: GF|GF
+    posY: air
+    negY: ground
+    posZ: FF|GF
+    negZ: GF|GF
+  - tile: {fileID: 11400000, guid: 10e68499191a44613ac17b0faf66f2ba, type: 2}
+    posX: GF|FF
+    negX: FF|FF
+    posY: air
+    negY: ground
+    posZ: FF|FF
+    negZ: FF|GF
+  - tile: {fileID: 11400000, guid: 462523e3586c2444caa6d1d542743be8, type: 2}
+    posX: GF|FF
+    negX: GF|FF
+    posY: air
+    negY: ground
+    posZ: FF|GF
+    negZ: FF|GF
+  - tile: {fileID: 11400000, guid: b758471e8a19247588e874b631d4825f, type: 2}
+    posX: GH|GH
+    negX: GH|GH
+    posY: air
+    negY: ground
+    posZ: GH|GH
+    negZ: GH|GH
+  - tile: {fileID: 11400000, guid: c5c0367e4af474602a38998ebb6cacf3, type: 2}
+    posX: FH|FH
+    negX: FH|FH
+    posY: air
+    negY: ground
+    posZ: FH|FH
+    negZ: FH|FH
+  - tile: {fileID: 11400000, guid: a6f4104274c444536b898d807f8d65a9, type: 2}
+    posX: CH|CH
+    negX: CH|CH
+    posY: air
+    negY: ground
+    posZ: CH|CH
+    negZ: CH|CH
+  - tile: {fileID: 11400000, guid: 8c9fbef56868a46b1ab663b3852f224b, type: 2}
+    posX: WH|WH
+    negX: WH|WH
+    posY: air
+    negY: ground
+    posZ: WH|WH
+    negZ: WH|WH
+  - tile: {fileID: 11400000, guid: 70f1fc38d46054f4eb6dc4dd27263222, type: 2}
+    posX: GH|WH
+    negX: WH|GH
+    posY: air
+    negY: ground
+    posZ: WH|WH
+    negZ: GH|GH
+  - tile: {fileID: 11400000, guid: 3f887ee348e4244a7b5c63d02ba74929, type: 2}
+    posX: GH|WH
+    negX: GH|GH
+    posY: air
+    negY: ground
+    posZ: WH|GH
+    negZ: GH|GH
+  - tile: {fileID: 11400000, guid: eb42a3fe00a404d59a61685af4652980, type: 2}
+    posX: GH|WH
+    negX: WH|WH
+    posY: air
+    negY: ground
+    posZ: WH|WH
+    negZ: WH|GH
+  - tile: {fileID: 11400000, guid: 70f8b77d14f8446e38782e89f929e86d, type: 2}
+    posX: GH|WH
+    negX: GH|WH
+    posY: air
+    negY: ground
+    posZ: WH|GH
+    negZ: WH|GH
+  - tile: {fileID: 11400000, guid: 4286fab504c70433fbd3adf152ebfeeb, type: 2}
+    posX: GH|FH
+    negX: FH|GH
+    posY: air
+    negY: ground
+    posZ: FH|FH
+    negZ: GH|GH
+  - tile: {fileID: 11400000, guid: 65fcdb2814e4d4aac9a4b53c264e5646, type: 2}
+    posX: GH|FH
+    negX: GH|GH
+    posY: air
+    negY: ground
+    posZ: FH|GH
+    negZ: GH|GH
+  - tile: {fileID: 11400000, guid: 0a4b7d08f6f304000a8915466deb6549, type: 2}
+    posX: GH|FH
+    negX: FH|FH
+    posY: air
+    negY: ground
+    posZ: FH|FH
+    negZ: FH|GH
+  - tile: {fileID: 11400000, guid: 90f31c549d07343e09d5b1551a0ba336, type: 2}
+    posX: GH|FH
+    negX: GH|FH
+    posY: air
+    negY: ground
+    posZ: FH|GH
+    negZ: FH|GH
+  - tile: {fileID: 11400000, guid: 5f5c2a409cbfd452a9a85ff0ccda52a1, type: 2}
+    posX: GZ|GH
+    negX: GH|GZ
+    posY: air
+    negY: ground
+    posZ: GH|GH
+    negZ: GZ|GZ
+  - tile: {fileID: 11400000, guid: 74b8344ffd5cd4166bab6b3a55d67c89, type: 2}
+    posX: GZ|GH
+    negX: GZ|GZ
+    posY: air
+    negY: ground
+    posZ: GH|GZ
+    negZ: GZ|GZ
+  - tile: {fileID: 11400000, guid: 6d0c4af9365f74840b13fa62ea9c7073, type: 2}
+    posX: GH|GH
+    negX: GH|GZ
+    posY: air
+    negY: ground
+    posZ: GH|GH
+    negZ: GZ|GH
+  - tile: {fileID: 11400000, guid: 14b525c5560e244e09ad00f13e2fc46e, type: 2}
+    posX: GH|GF
+    negX: GF|GH
+    posY: air
+    negY: ground
+    posZ: GF|GF
+    negZ: GH|GH
+  - tile: {fileID: 11400000, guid: 04968ed6d8d8e4c698d88f459ba32a7e, type: 2}
+    posX: GH|GF
+    negX: GH|GH
+    posY: air
+    negY: ground
+    posZ: GF|GH
+    negZ: GH|GH
+  - tile: {fileID: 11400000, guid: c86f528065c034b7e96066aa6bef0a2b, type: 2}
+    posX: GF|GF
+    negX: GF|GH
+    posY: air
+    negY: ground
+    posZ: GF|GF
+    negZ: GH|GF
+  - tile: {fileID: 11400000, guid: 21b68755bf2c2497fbac6940be2a0c53, type: 2}
+    posX: GZ|GF
+    negX: GF|GZ
+    posY: air
+    negY: ground
+    posZ: GF|GF
+    negZ: GZ|GZ
+  - tile: {fileID: 11400000, guid: ca0f164b1f25c4c7caacf0ae0c4a15fb, type: 2}
+    posX: GZ|GF
+    negX: GZ|GZ
+    posY: air
+    negY: ground
+    posZ: GF|GZ
+    negZ: GZ|GZ
+  - tile: {fileID: 11400000, guid: 968d66d8910d04983b8607b57fa023c4, type: 2}
+    posX: GF|GF
+    negX: GF|GZ
+    posY: air
+    negY: ground
+    posZ: GF|GF
+    negZ: GZ|GF
+  - tile: {fileID: 11400000, guid: 844339f739b764562b42ca4d83282b3a, type: 2}
+    posX: GH|WB|CH
+    negX: CH|WB|GH
+    posY: c|c|o|o|wall
+    negY: ground
+    posZ: Kl|Kr
+    negZ: Ol|Or
+  - tile: {fileID: 11400000, guid: 9468c923a20a04c238b3788396f1f1f5, type: 2}
+    posX: GH|WB|CH
+    negX: CH|WB|GH
+    posY: c|c|o|o|stair
+    negY: ground
+    posZ: Kl|Kr
+    negZ: Ol|Or
+  - tile: {fileID: 11400000, guid: 5aabf57755629401db70db2d8437699f, type: 2}
+    posX: o|WM|c
+    negX: c|WM|o
+    posY: c|c|o|o|wall
+    negY: c|c|o|o|wall
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 8093a9f7b1a15456d9cc3562125dfaa0, type: 2}
+    posX: o|WM|c
+    negX: c|WM|o
+    posY: c|c|o|o|wall
+    negY: c|c|o|o|wall
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 06412f9e41bfa4d1a99fb93bf59fb8a5, type: 2}
+    posX: o|WMS|c
+    negX: c|WM|o
+    posY: c|c|o|o|wall
+    negY: c|c|o|o|stair
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 5a5552534f42046d4bc83e78212cad18, type: 2}
+    posX: o|WM|c
+    negX: c|WMS|o
+    posY: c|c|o|o|stair
+    negY: c|c|o|o|wall
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 96bda72843f754ef8b606dd54ed8d489, type: 2}
+    posX: o|WT|c
+    negX: c|WT|o
+    posY: air
+    negY: c|c|o|o|wall
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: d06a64f2ba6aa419592a33aa21d4840e, type: 2}
+    posX: o|WT|c
+    negX: c|WT|o
+    posY: air
+    negY: c|c|o|o|stair
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: b34ef3dd8862d49809258e9c28f316ea, type: 2}
+    posX: GH|WB|CH
+    negX: CH|WB|GH
+    posY: c|c|o|o|gate
+    negY: ground
+    posZ: Kl|Kr
+    negZ: Ol|Or
+  - tile: {fileID: 11400000, guid: 1a3899f0860934e769583308453ee5d4, type: 2}
+    posX: o|WT|c
+    negX: c|WT|o
+    posY: air
+    negY: c|c|o|o|gate
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 7aa2e00c763384a249719c057e96c19c, type: 2}
+    posX: o|WM|c
+    negX: c|WM|o
+    posY: c|c|o|o|wall
+    negY: c|c|o|o|gate
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: da8eb8f1132fb41b693ddf8bce3a3188, type: 2}
+    posX: GHl|WB|CHr
+    negX: Ol|Or
+    posY: c|o|o|o|tower
+    negY: ground
+    posZ: CHl|WB|GHr
+    negZ: Ol|Or
+  - tile: {fileID: 11400000, guid: f809436f9a4a9403caa50cef5dec0407, type: 2}
+    posX: o|WM|c
+    negX: air|air
+    posY: c|o|o|o|tower
+    negY: c|o|o|o|tower
+    posZ: c|WM|o
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: ef295e055fef8439397171aaae460331, type: 2}
+    posX: c|WM|o
+    negX: air|air
+    posY: o|c|c|c|tower
+    negY: o|c|c|c|tower
+    posZ: o|WM|c
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 68a80b0c0be03478c8d722d51a2e48f8, type: 2}
+    posX: o|WT|c
+    negX: air|air
+    posY: air
+    negY: c|o|o|o|tower
+    posZ: c|WT|o
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 03bf0a040e584495f86e3776fec39a22, type: 2}
+    posX: o|WT|c
+    negX: air|air
+    posY: c|o|o|o|door
+    negY: c|o|o|o|tower
+    posZ: c|WT|o
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 7d203dc66b20f4e86921305f35cbc068, type: 2}
+    posX: air|air
+    negX: air|air
+    posY: s1|s2|s3|s4|spiral
+    negY: c|o|o|o|door
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: a97bea081aa194506a0c005d64928f94, type: 2}
+    posX: CHl|WB|GHr
+    negX: Kl|Kr
+    posY: o|c|c|c|tower
+    negY: ground
+    posZ: GHl|WB|CHr
+    negZ: Kl|Kr
+  - tile: {fileID: 11400000, guid: afa7bf233e290446d9d87c11d020b25c, type: 2}
+    posX: c|WT|o
+    negX: air|air
+    posY: air
+    negY: o|c|c|c|tower
+    posZ: o|WT|c
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 26545129138904b34b6126ff46770016, type: 2}
+    posX: c|WT|o
+    negX: air|air
+    posY: o|c|c|c|door
+    negY: o|c|c|c|tower
+    posZ: o|WT|c
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: fbab3c625c9ac40569ec5e5e29b303d4, type: 2}
+    posX: air|air
+    negX: air|air
+    posY: s1|s2|s3|s4|spiral
+    negY: o|c|c|c|door
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 88bc960fad768490e96291f95fed8aca, type: 2}
+    posX: GHl|WB|CHr
+    negX: CHl|WB|GHr
+    posY: c|c|o|o|tower
+    negY: ground
+    posZ: Kl|Kr
+    negZ: Ol|Or
+  - tile: {fileID: 11400000, guid: caae46b46b28c451b99fc030dc950369, type: 2}
+    posX: o|WM|c
+    negX: c|WM|o
+    posY: c|c|o|o|tower
+    negY: c|c|o|o|tower
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: a9897e58a4aba45feab9427fd9223ed5, type: 2}
+    posX: o|WT|c
+    negX: c|WT|o
+    posY: air
+    negY: c|c|o|o|tower
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 133b4d3159b4f4fc5983fabec93d3c7f, type: 2}
+    posX: o|WT|c
+    negX: c|WT|o
+    posY: c|c|o|o|door
+    negY: c|c|o|o|tower
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 7362978c4d1b44acc8b183e695415157, type: 2}
+    posX: air|air
+    negX: air|air
+    posY: s1|s2|s3|s4|spiral
+    negY: c|c|o|o|door
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: c432367026c974ce4a2065f73fa4f8f7, type: 2}
+    posX: air|air
+    negX: air|air
+    posY: s1|s2|s3|s4|spiral
+    negY: s1|s2|s3|s4|spiral
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 06fb9c97bcdad4fd5890fa8380c34ebe, type: 2}
+    posX: air|air
+    negX: air|air
+    posY: s1|s2|s3|s4|spiral
+    negY: s1|s2|s3|s4|spiral
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: 0824a6d58e87d4f5b9e9d5a4f7b7cf08, type: 2}
+    posX: air|air
+    negX: air|air
+    posY: air
+    negY: s1|s2|s3|s4|spiral
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: ffe81c765216c4717bede33a7794f247, type: 2}
+    posX: air|air
+    negX: air|air
+    posY: air
+    negY: air
+    posZ: air|air
+    negZ: air|air
+  - tile: {fileID: 11400000, guid: a6fdb9b4ca32b4586a1d958b79e09a50, type: 2}
+    posX: 
+    negX: 
+    posY: ground
+    negY: 
+    posZ: 
+    negZ: 
+  - tile: {fileID: 11400000, guid: 87beae0acc22746d1847b09d07cbb79a, type: 2}
+    posX: edge|edge
+    negX: edge|edge
+    posY: 
+    negY: 
+    posZ: edge|edge
+    negZ: edge|edge
+  compatible:
+  - a: edge
+    b: GH
+  - a: edge
+    b: air
+  - a: Kl
+    b: CH
+  - a: Kr
+    b: CH
+  - a: Ol
+    b: GH
+  - a: Or
+    b: GH
+  - a: GHl
+    b: GH
+  - a: GHr
+    b: GH
+  - a: CHl
+    b: CH
+  - a: CHr
+    b: CH
+--- !u!4 &1803873239
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1803873237}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1660057539 &9223372036854775807
+SceneRoots:
+  m_ObjectHideFlags: 0
+  m_Roots:
+  - {fileID: 1392838640}
+  - {fileID: 1502405445}
+  - {fileID: 1803873239}
+  - {fileID: 923354271}

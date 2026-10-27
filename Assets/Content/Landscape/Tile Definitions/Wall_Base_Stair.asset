@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b76555b9ef6549e2b0931ac8326e350, type: 3}
+  m_Name: Wall_Base_Stair
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
+  model: {fileID: 7489167714894016620, guid: 636c32308e0914f728a9ce0edb62bdfc, type: 3}
+  allowedOrientations: 1
+  customOrientationMask: 1
+  symmetry: 0
+  baseWeight: 1
+  gizmoColor: {r: 0.95, g: 0.85, b: 0.6, a: 1}
+  detectedSymmetryMask: 1
+  detectedSymmetrySource: 636c32308e0914f728a9ce0edb62bdfc:9ae620428b92a1195bbc67f0b8b0d08b

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b76555b9ef6549e2b0931ac8326e350, type: 3}
+  m_Name: Gate_TopMid
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
+  model: {fileID: 8856712539509542016, guid: 41cdcd2f155eb4073b02cbd1ef120436, type: 3}
+  allowedOrientations: 1
+  customOrientationMask: 1
+  symmetry: 0
+  baseWeight: 0.03
+  gizmoColor: {r: 0.95, g: 0.85, b: 0.6, a: 1}
+  detectedSymmetryMask: 3
+  detectedSymmetrySource: 41cdcd2f155eb4073b02cbd1ef120436:4e4942ca9e28d7bd148a9b91452b36a2

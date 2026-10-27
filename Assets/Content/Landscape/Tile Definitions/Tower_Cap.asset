@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b76555b9ef6549e2b0931ac8326e350, type: 3}
+  m_Name: Tower_Cap
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
+  model: {fileID: 9215633898799323231, guid: e08c67d6d2d8b43cf96957864a8798fc, type: 3}
+  allowedOrientations: 1
+  customOrientationMask: 1
+  symmetry: 0
+  baseWeight: 0.03
+  gizmoColor: {r: 0.85, g: 0.7, b: 0.45, a: 1}
+  detectedSymmetryMask: 1
+  detectedSymmetrySource: e08c67d6d2d8b43cf96957864a8798fc:0eec50beaba91aa535897a92e4f2e65f

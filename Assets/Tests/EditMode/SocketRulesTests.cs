@@ -191,5 +191,98 @@ namespace Wfc.Tests
             sockets.faceLabels[0][2] = "y";
             Assert.That(sockets.ComputeHash(tiles), Is.Not.EqualTo(before));
         }
+
+        [Test]
+        public void TwoPartEdgesOnlyMeetTheirReverse()
+        {
+            // Left and right are as seen from outside, so facing faces read each other backwards.
+            var tiles = new List<TileSpec>
+            {
+                Tile("a", OrientationSet.IdentityOnly, OrientationSet.All),
+                Tile("reverse", OrientationSet.IdentityOnly, OrientationSet.All),
+                Tile("same", OrientationSet.IdentityOnly, OrientationSet.All),
+            };
+            var sockets = new SocketRules { faceLabels = { Faces(posX: "x|y"), Faces(negX: "y|x"), Faces(negX: "x|y") } };
+
+            RulesetData data = sockets.Derive(tiles).data;
+
+            Assert.That(Neighbours(data, VariantsOf(data, 0).Single(), Direction.PosX), Is.EqualTo(new[] { VariantsOf(data, 1).Single() }));
+        }
+
+        [Test]
+        public void CornerLabelsJoinEdgesLikeMarchingSquares()
+        {
+            // Corners per face, left to right from outside: east SE|NE, north NE|NW, west NW|SW, south SW|SE.
+            var tiles = new List<TileSpec>
+            {
+                Tile("grass", OrientationSet.Yaw, OrientationSet.All),
+                Tile("water", OrientationSet.Yaw, OrientationSet.All),
+                Tile("shore", OrientationSet.Yaw, OrientationSet.IdentityOnly),   // water on the north half
+            };
+            var sockets = new SocketRules
+            {
+                faceLabels =
+                {
+                    Faces("G|G", "G|G", "", "", "G|G", "G|G"),
+                    Faces("W|W", "W|W", "", "", "W|W", "W|W"),
+                    Faces(posX: "G|W", negX: "W|G", posZ: "W|W", negZ: "G|G"),
+                },
+            };
+
+            RulesetData data = sockets.Derive(tiles).data;
+
+            int shore = data.FindVariant(2, Orientation.Identity);
+            int turned = data.FindVariant(2, Orientation.RotationY90 * Orientation.RotationY90);
+            Assert.That(Neighbours(data, shore, Direction.PosX), Does.Contain(shore), "the shore continues along X");
+            Assert.That(Neighbours(data, shore, Direction.PosX), Has.No.Member(turned), "water would meet grass");
+            Assert.That(Neighbours(data, shore, Direction.PosZ), Does.Contain(VariantsOf(data, 1).Single()));
+            Assert.That(Neighbours(data, shore, Direction.NegZ), Does.Contain(VariantsOf(data, 0).Single()));
+            Assert.That(Neighbours(data, shore, Direction.PosZ), Has.No.Member(VariantsOf(data, 0).Single()));
+            AssertSymmetric(data);
+        }
+
+        [Test]
+        public void FourPartTopsOnlyStackInTheSameRotation()
+        {
+            var tiles = new List<TileSpec> { Tile("column", OrientationSet.Yaw, OrientationSet.All, isInvisible: true) };
+            var sockets = new SocketRules { faceLabels = { Faces(posY: "a|b|c|d|core", negY: "a|b|c|d|core") } };
+
+            RulesetData data = sockets.Derive(tiles).data;
+
+            int[] variants = VariantsOf(data, 0);
+            Assert.That(variants.Length, Is.EqualTo(4), "the pattern tells the four rotations apart");
+            foreach (int v in variants)
+            {
+                Assert.That(Neighbours(data, v, Direction.PosY), Is.EqualTo(new[] { v }));
+            }
+        }
+
+        [Test]
+        public void MirroringReversesSideLabels()
+        {
+            var mirror = OrientationSet.Generate(Orientation.MirrorX);
+            var tiles = new List<TileSpec>
+            {
+                Tile("fixed", OrientationSet.IdentityOnly, OrientationSet.All),
+                Tile("flippable", mirror, OrientationSet.All),
+            };
+            // Mirrored along X, the flippable tile's east face "p|q" ends up on the west, still south p, north q.
+            var sockets = new SocketRules { faceLabels = { Faces(posX: "p|q"), Faces(posX: "p|q", negX: "r|s") } };
+
+            RulesetData data = sockets.Derive(tiles).data;
+
+            Assert.That(Neighbours(data, VariantsOf(data, 0).Single(), Direction.PosX), Is.EqualTo(new[] { data.FindVariant(1, Orientation.MirrorX) }));
+        }
+
+        [Test]
+        public void UnsupportedPartCountsAreReported()
+        {
+            var tiles = new List<TileSpec> { Tile("odd", OrientationSet.All, OrientationSet.All) };
+            var sockets = new SocketRules { faceLabels = { Faces(posX: "a", posY: "a|b") } };
+
+            RuleDiagnostic invalid = sockets.Derive(tiles).data.diagnostics.Single(d => d.code == DiagnosticCode.InvalidSocket);
+            Assert.That(invalid.severity, Is.EqualTo(DiagnosticSeverity.Error));
+            Assert.That(invalid.message, Does.Contain("a|b"));
+        }
     }
 }

@@ -6,9 +6,9 @@ namespace Wfc.Authoring
 {
     /// <summary>
     /// Rules from sockets instead of samples: every tile of the tile set gets a label per face (in the tile's own
-    /// frame), and two tiles may be neighbours wherever their touching faces carry the same label or a pair listed as
-    /// compatible. A label describes a whole face, so a face pattern that isn't symmetric within its plane needs a
-    /// separate label per orientation that matters. Tiles without any label don't take part.
+    /// frame), and two tiles may be neighbours wherever their touching faces fit. A label can consist of parts at
+    /// points of the face (e.g. <c>left|right</c>), so face patterns that aren't symmetric work as well; see
+    /// <see cref="SocketRules"/>. Tiles without any label don't take part.
     /// </summary>
     [AddComponentMenu("WFC/Socket Rule Source")]
     public sealed class SocketRuleSource : RuleSource

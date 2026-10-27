@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b76555b9ef6549e2b0931ac8326e350, type: 3}
+  m_Name: Water_InnerCorner_H
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
+  model: {fileID: 4168443758206115627, guid: b0908d16e312049828bc184e0ea99713, type: 3}
+  allowedOrientations: 2
+  customOrientationMask: 1
+  symmetry: 0
+  baseWeight: 1
+  gizmoColor: {r: 0.3, g: 0.55, b: 1, a: 1}
+  detectedSymmetryMask: 35184372088833
+  detectedSymmetrySource: b0908d16e312049828bc184e0ea99713:2cab4eec46ebdf1335a432baa4f21756

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b76555b9ef6549e2b0931ac8326e350, type: 3}
+  m_Name: Tower_Top_Concave
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
+  model: {fileID: 7032403040795912709, guid: b7703e02df12645ce9d6e9922ab07537, type: 3}
+  allowedOrientations: 1
+  customOrientationMask: 1
+  symmetry: 0
+  baseWeight: 0.03
+  gizmoColor: {r: 0.85, g: 0.7, b: 0.45, a: 1}
+  detectedSymmetryMask: 1
+  detectedSymmetrySource: b7703e02df12645ce9d6e9922ab07537:429f8cbf76cbcd76fda13dcad3e09bb5

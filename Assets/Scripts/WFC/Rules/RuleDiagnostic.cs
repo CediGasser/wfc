@@ -30,6 +30,8 @@ namespace Wfc
         MissingSelfConnection = 7,
         /// <summary>A weight override matches no connection.</summary>
         OrphanedOverride = 8,
+        /// <summary>A socket label can't be read, e.g. it has an unsupported number of parts.</summary>
+        InvalidSocket = 9,
     }
 
     /// <summary>

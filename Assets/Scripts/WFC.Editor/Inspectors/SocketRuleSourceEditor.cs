@@ -10,7 +10,7 @@ namespace Wfc.Editor
     public sealed class SocketRuleSourceEditor : RuleSourceEditor
     {
         private const float NameWidth = 110f;
-        private const float LabelWidth = 52f;
+        private const float LabelWidth = 90f;
 
         private static readonly Direction[] Faces = { Direction.PosX, Direction.NegX, Direction.PosY, Direction.NegY, Direction.PosZ, Direction.NegZ };
 
@@ -27,6 +27,8 @@ namespace Wfc.Editor
             }
             EditorGUILayout.LabelField(
                 "Every face gets a label, in the tile's own frame. Two tiles may be neighbours where their touching faces have the same label or a compatible pair. " +
+                "Labels can have parts at points of the face, separated by |: sides left|right or left|centre|right as seen from outside, top and bottom " +
+                "the corners +X+Z|−X+Z|−X−Z|+X−Z (plus |centre). Facing parts must fit point by point, so a|b meets b|a. " +
                 "An empty label fits nothing; tiles without labels don't take part.", EditorStyles.wordWrappedMiniLabel);
             if (tileSet == null)
             {
@@ -128,15 +130,18 @@ namespace Wfc.Editor
             }
         }
 
-        /// <summary>How often each label is used; a label on a single face is often a typo.</summary>
+        /// <summary>How often each label part is used; a part on a single face is often a typo.</summary>
         private static void DrawLabelUsage(SocketRuleSource sockets, TileSet tileSet)
         {
             var counts = new Dictionary<string, int>();
             foreach (SocketRuleSource.TileSockets entry in sockets.Sockets.Where(s => s.tile != null && tileSet.Contains(s.tile)))
             {
-                foreach (string label in entry.ToArray().Select(l => l.Trim()).Where(l => l.Length > 0))
+                foreach (string label in entry.ToArray().Where(l => l.Trim().Length > 0))
                 {
-                    counts[label] = counts.TryGetValue(label, out int count) ? count + 1 : 1;
+                    foreach (string part in label.Split(SocketRules.PartSeparator).Select(p => p.Trim()).Where(p => p.Length > 0).Distinct())
+                    {
+                        counts[part] = counts.TryGetValue(part, out int count) ? count + 1 : 1;
+                    }
                 }
             }
             if (counts.Count == 0)
@@ -145,7 +150,7 @@ namespace Wfc.Editor
             }
             EditorGUILayout.Space();
             string usage = string.Join(", ", counts.OrderBy(c => c.Key).Select(c => $"{c.Key} ×{c.Value}"));
-            EditorGUILayout.LabelField($"Labels: {usage}", EditorStyles.wordWrappedMiniLabel);
+            EditorGUILayout.LabelField($"Label parts: {usage}", EditorStyles.wordWrappedMiniLabel);
             string[] single = counts.Where(c => c.Value == 1 && !sockets.Compatible.Any(p => p.a == c.Key || p.b == c.Key)).Select(c => c.Key).ToArray();
             if (single.Length > 0)
             {

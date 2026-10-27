@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b76555b9ef6549e2b0931ac8326e350, type: 3}
+  m_Name: Gate
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
+  model: {fileID: 6634633360086772016, guid: 5f8b3ad9af65e4cae89b241dd2938b0c, type: 3}
+  allowedOrientations: 1
+  customOrientationMask: 1
+  symmetry: 0
+  baseWeight: 1
+  gizmoColor: {r: 0.95, g: 0.85, b: 0.6, a: 1}
+  detectedSymmetryMask: 1
+  detectedSymmetrySource: 5f8b3ad9af65e4cae89b241dd2938b0c:4265f0252e4fdf9d28aa1ba2dd362e25
