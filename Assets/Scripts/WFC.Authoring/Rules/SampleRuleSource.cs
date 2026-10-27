@@ -20,9 +20,6 @@ namespace Wfc.Authoring
         [Tooltip("The tile empty cells count as, usually air. None: empty cells carry no information, e.g. gaps between separate samples.")]
         [SerializeField] private TileDefinition emptyCellTile;
 
-        [Tooltip("Mark every learned connection between neighbouring cells in the Scene view.")]
-        [SerializeField] private bool showConnections = true;
-
         private Chunk chunk;
 
         public Chunk Chunk => chunk != null ? chunk : chunk = GetComponent<Chunk>();
@@ -48,8 +45,6 @@ namespace Wfc.Authoring
                 NotifyChanged();
             }
         }
-
-        public bool ShowConnections => showConnections;
 
         public override bool HasObservations => true;
 
