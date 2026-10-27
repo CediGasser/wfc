@@ -49,7 +49,8 @@ namespace Wfc.Editor
         private static void DrawSelection(Chunk chunk)
         {
             IReadOnlyList<int> cells = ChunkToolState.SelectedCells;
-            bool anyGenerated = cells.Any(c => chunk.GetShownTile(c, true, out _, out bool generated) >= 0 && generated);
+            List<IChunkLayer> layers = ChunkLayers.GetLayers(chunk.gameObject);
+            bool anyGenerated = cells.Any(c => ChunkLayers.GetShownTile(layers, c, out _, out IChunkLayer from) >= 0 && from is not Chunk);
             if (cells.Count > 1)
             {
                 EditorGUILayout.LabelField($"{cells.Count} cells selected", EditorStyles.boldLabel);
@@ -57,7 +58,8 @@ namespace Wfc.Editor
             else
             {
                 int cell = cells[0];
-                int tile = chunk.GetShownTile(cell, true, out Orientation orientation, out bool generated);
+                int tile = ChunkLayers.GetShownTile(layers, cell, out Orientation orientation, out IChunkLayer from);
+                bool generated = tile >= 0 && from is not Chunk;
                 TileDefinition definition = chunk.GetDefinition(tile);
                 string name = tile < 0 ? "Empty" : definition != null ? definition.name : $"Missing tile {tile}";
                 EditorGUILayout.LabelField($"{name}{(generated ? " (generated)" : "")}", EditorStyles.boldLabel);
@@ -133,11 +135,35 @@ namespace Wfc.Editor
             }
         }
 
+        private static readonly (string label, string tooltip, Orientation change)[] Turns =
+        {
+            ("⟲Y", "Rotate around Y (Shift+R)", Orientation.RotationY90.Inverse),
+            ("⟳Y", "Rotate around Y (R)", Orientation.RotationY90),
+            ("⟲X", "Tilt around X (Shift+T)", Orientation.RotationX90.Inverse),
+            ("⟳X", "Tilt around X (T)", Orientation.RotationX90),
+            ("⟲Z", "Tilt around Z", Orientation.RotationZ90.Inverse),
+            ("⟳Z", "Tilt around Z", Orientation.RotationZ90),
+            ("Mirror", "Mirror along X (M)", Orientation.MirrorX),
+        };
+
         private static void DrawHints()
         {
+            bool cells = ChunkToolState.Chunk != null && ChunkToolState.SelectedCells.Count > 0;
+            EditorGUILayout.Space(2);
+            EditorGUILayout.LabelField(cells ? "Turn the selected cells" : "Turn the brush", EditorStyles.miniBoldLabel);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                foreach (var (label, tooltip, change) in Turns)
+                {
+                    if (GUILayout.Button(new GUIContent(label, tooltip), EditorStyles.miniButton))
+                    {
+                        ChunkShortcuts.Apply(change, label == "Mirror" ? "Mirror Tile" : "Rotate Tile");
+                    }
+                }
+            }
             TileDefinition palette = ChunkToolState.PaletteTile;
             string tile = palette != null ? $"{palette.name} {ChunkToolState.BrushOrientation}" : "none (Window > WFC > Tile Palette)";
-            EditorGUILayout.LabelField($"Shift+Click places: {tile}. Delete erases, Alt+1/2/3 rotate, Alt+4 mirrors (the brush if nothing is selected).", EditorStyles.wordWrappedMiniLabel);
+            EditorGUILayout.LabelField($"Shift+Click places: {tile}. Delete erases; R / Shift+R rotate, T / Shift+T tilt, M mirrors.", EditorStyles.wordWrappedMiniLabel);
         }
     }
 }

@@ -84,7 +84,7 @@ namespace Wfc.Editor
             var entries = new List<(TileDefinition definition, string label)>();
             if (tileSet != null)
             {
-                EditorGUILayout.LabelField($"Tiles of {tileSet.name}. Choose one, then Shift+Click with the WFC Chunk Tool; Alt+1..4 rotate it while no cell is selected.", EditorStyles.wordWrappedMiniLabel);
+                EditorGUILayout.LabelField($"Tiles of {tileSet.name}. Choose one, then Shift+Click with the WFC Chunk Tool; R, T and M turn it while no cell is selected.", EditorStyles.wordWrappedMiniLabel);
                 for (int slot = 0; slot < tileSet.Count; slot++)
                 {
                     if (tileSet[slot] != null)
