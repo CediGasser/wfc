@@ -80,12 +80,16 @@ namespace Wfc.Authoring
         [SerializeField] private TileSet tileSet;
         [SerializeField] private List<TileSockets> sockets = new List<TileSockets>();
         [SerializeField] private List<SocketPair> compatible = new List<SocketPair>();
+        [Tooltip("Label parts that don't fit themselves, only their compatible pairs.")]
+        [SerializeField] private List<string> exclusive = new List<string>();
 
         public override TileSet TileSet => tileSet;
 
         public IReadOnlyList<TileSockets> Sockets => sockets;
 
         public IReadOnlyList<SocketPair> Compatible => compatible;
+
+        public IReadOnlyList<string> Exclusive => exclusive;
 
         public void SetTileSet(TileSet set)
         {
@@ -137,6 +141,24 @@ namespace Wfc.Authoring
             NotifyChanged();
         }
 
+        public void AddExclusive(string part)
+        {
+            exclusive.Add(part);
+            NotifyChanged();
+        }
+
+        public void SetExclusive(int index, string part)
+        {
+            exclusive[index] = part;
+            NotifyChanged();
+        }
+
+        public void RemoveExclusive(int index)
+        {
+            exclusive.RemoveAt(index);
+            NotifyChanged();
+        }
+
         public override IRuleSource CreateRules()
         {
             var rules = new SocketRules();
@@ -149,6 +171,7 @@ namespace Wfc.Authoring
             {
                 rules.compatible.Add((pair.a, pair.b));
             }
+            rules.exclusive.AddRange(exclusive);
             rules.overrides.AddRange(Overrides);
             return rules;
         }

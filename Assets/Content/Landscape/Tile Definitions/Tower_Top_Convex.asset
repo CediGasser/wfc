@@ -19,4 +19,4 @@ MonoBehaviour:
   baseWeight: 0.15
   gizmoColor: {r: 0.85, g: 0.7, b: 0.45, a: 1}
   detectedSymmetryMask: 1
-  detectedSymmetrySource: ba98469fe2ff34350a17da90e0ee19b1:2dec7d60b53b3f244f30625a1b7ecf14
+  detectedSymmetrySource: ba98469fe2ff34350a17da90e0ee19b1:459a01aa6b508cda18b7021308d91f37

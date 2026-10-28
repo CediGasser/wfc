@@ -20,7 +20,7 @@ namespace Wfc
     /// from above) or 5 parts (those corners and the centre).</item>
     /// </list>
     /// Two faces fit if their parts lie on the same points once both tiles are placed, and the parts at every point
-    /// are equal or a pair listed in <see cref="compatible"/>. Rotating or mirroring a tile moves its parts with it,
+    /// are equal (unless listed in <see cref="exclusive"/>) or a pair listed in <see cref="compatible"/>. Rotating or mirroring a tile moves its parts with it,
     /// so a single-part label fits however the face is turned, while e.g. <c>a|b</c> only meets <c>b|a</c> and a
     /// four-part top only stacks in the matching rotation. An empty part fits nothing.
     /// </para>
@@ -37,6 +37,11 @@ namespace Wfc
         public List<string[]> faceLabels = new List<string[]>();
         /// <summary>Pairs of different label parts that fit each other, in either order.</summary>
         public List<(string a, string b)> compatible = new List<(string, string)>();
+        /// <summary>
+        /// Label parts that don't fit themselves, only the parts they're paired with in <see cref="compatible"/>, e.g.
+        /// the crest of a slope that may meet flat ground but not another crest.
+        /// </summary>
+        public List<string> exclusive = new List<string>();
         public List<WeightOverride> overrides = new List<WeightOverride>();
 
         /// <summary>A label part at a point of the tile's cube, in coordinates where the cube spans −2..2.</summary>
@@ -86,7 +91,8 @@ namespace Wfc
                 fits.Add((Normalize(a), Normalize(b)));
                 fits.Add((Normalize(b), Normalize(a)));
             }
-            bool Fit(string a, string b) => a.Length > 0 && b.Length > 0 && (a == b || fits.Contains((a, b)));
+            var exclusiveParts = new HashSet<string>(exclusive.Select(Normalize));
+            bool Fit(string a, string b) => a.Length > 0 && b.Length > 0 && ((a == b && !exclusiveParts.Contains(a)) || fits.Contains((a, b)));
 
             // Per variant and world direction: the parts of the face pointing there, at their world points.
             var patterns = new Part[variants.VariantCount * Directions.Count][];
@@ -141,6 +147,14 @@ namespace Wfc
             {
                 hash.Add(Normalize(a));
                 hash.Add(Normalize(b));
+            }
+            if (exclusive.Count > 0)
+            {
+                hash.Add("exclusive");
+                foreach (string part in exclusive.Select(Normalize).OrderBy(p => p, StringComparer.Ordinal))
+                {
+                    hash.Add(part);
+                }
             }
             hash.Add(overrides);
             return hash.ToString();

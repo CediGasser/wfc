@@ -26,7 +26,7 @@ namespace Wfc.Editor
                 sockets.SetTileSet(tileSet);
             }
             EditorGUILayout.LabelField(
-                "Every face gets a label, in the tile's own frame. Two tiles may be neighbours where their touching faces have the same label or a compatible pair. " +
+                "Every face gets a label, in the tile's own frame. Two tiles may be neighbours where their touching faces have the same label (unless it's exclusive) or a compatible pair. " +
                 "Labels can have parts at points of the face, separated by |: sides left|right or left|centre|right as seen from outside, top and bottom " +
                 "the corners +X+Z|−X+Z|−X−Z|+X−Z (plus |centre). Facing parts must fit point by point, so a|b meets b|a. " +
                 "An empty label fits nothing; tiles without labels don't take part.", EditorStyles.wordWrappedMiniLabel);
@@ -40,6 +40,7 @@ namespace Wfc.Editor
             {
                 DrawSocketTable(sockets, tileSet);
                 DrawCompatiblePairs(sockets);
+                DrawExclusiveParts(sockets);
                 DrawLabelUsage(sockets, tileSet);
             }
         }
@@ -126,6 +127,39 @@ namespace Wfc.Editor
             {
                 Undo.RecordObject(sockets, "Add Compatible Pair");
                 sockets.AddCompatible(string.Empty, string.Empty);
+                EditorUtility.SetDirty(sockets);
+            }
+        }
+
+        private static void DrawExclusiveParts(SocketRuleSource sockets)
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField(new GUIContent("Exclusive Parts", "Label parts that don't fit themselves, only their compatible pairs, e.g. a slope's crest that may meet flat ground but not another crest."), EditorStyles.boldLabel);
+            for (int i = 0; i < sockets.Exclusive.Count; i++)
+            {
+                string part = sockets.Exclusive[i] ?? string.Empty;
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    string edited = EditorGUILayout.DelayedTextField(part);
+                    if (edited != part)
+                    {
+                        Undo.RecordObject(sockets, "Edit Exclusive Part");
+                        sockets.SetExclusive(i, edited);
+                        EditorUtility.SetDirty(sockets);
+                    }
+                    if (GUILayout.Button("−", EditorStyles.miniButton, GUILayout.Width(22)))
+                    {
+                        Undo.RecordObject(sockets, "Remove Exclusive Part");
+                        sockets.RemoveExclusive(i);
+                        EditorUtility.SetDirty(sockets);
+                        GUIUtility.ExitGUI();
+                    }
+                }
+            }
+            if (GUILayout.Button("Add Part", EditorStyles.miniButton, GUILayout.Width(80)))
+            {
+                Undo.RecordObject(sockets, "Add Exclusive Part");
+                sockets.AddExclusive(string.Empty);
                 EditorUtility.SetDirty(sockets);
             }
         }

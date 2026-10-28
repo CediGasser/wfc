@@ -54,6 +54,29 @@ namespace Wfc.Tests
         }
 
         [Test]
+        public void ExclusivePartsOnlyFitTheirPairs()
+        {
+            var tiles = new List<TileSpec> { Tile("crest", OrientationSet.All, OrientationSet.All), Tile("flat", OrientationSet.All, OrientationSet.All) };
+            var sockets = new SocketRules { faceLabels = { AllFaces("top"), AllFaces("flat") }, compatible = { ("top", "flat") }, exclusive = { "top" } };
+
+            RulesetData data = sockets.Derive(tiles).data;
+
+            Assert.That(data.connections.Select(c => (c.tileA, c.tileB)), Is.EquivalentTo(new[] { (0, 1), (1, 1) }), "crests meet flat ground, never each other");
+        }
+
+        [Test]
+        public void ExclusivePartsChangeTheHash()
+        {
+            var tiles = new List<TileSpec> { Tile("a", OrientationSet.All, OrientationSet.All) };
+            var sockets = new SocketRules { faceLabels = { AllFaces("x") } };
+            string before = sockets.ComputeHash(tiles);
+
+            sockets.exclusive.Add("x");
+
+            Assert.That(sockets.ComputeHash(tiles), Is.Not.EqualTo(before));
+        }
+
+        [Test]
         public void PipeSocketsGiveTheSameRulesAsAPipeSample()
         {
             var tiles = new List<TileSpec> { Tile("straight", OrientationSet.AllRotations, StraightPipeSymmetry) };

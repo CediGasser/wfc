@@ -531,13 +531,6 @@ MonoBehaviour:
   - key:
       tileA: 74b8344ffd5cd4166bab6b3a55d67c89
       orientationA: 0
-      direction: 0
-      tileB: 74b8344ffd5cd4166bab6b3a55d67c89
-      orientationB: 1
-    weight: 0.1
-  - key:
-      tileA: 74b8344ffd5cd4166bab6b3a55d67c89
-      orientationA: 0
       direction: 1
       tileB: 74b8344ffd5cd4166bab6b3a55d67c89
       orientationB: 1
@@ -576,13 +569,6 @@ MonoBehaviour:
       direction: 2
       tileB: 2c0774a97897c4a4793bc86bc73a3767
       orientationB: 0
-    weight: 0.1
-  - key:
-      tileA: 2c0774a97897c4a4793bc86bc73a3767
-      orientationA: 0
-      direction: 0
-      tileB: 2c0774a97897c4a4793bc86bc73a3767
-      orientationB: 1
     weight: 0.1
   - key:
       tileA: 2c0774a97897c4a4793bc86bc73a3767
@@ -4497,21 +4483,21 @@ MonoBehaviour:
     negX: GU|GL
     posY: air
     negY: solid
-    posZ: GU|GU
+    posZ: GUc|GUc
     negZ: GL|GL
   - tile: {fileID: 11400000, guid: 74b8344ffd5cd4166bab6b3a55d67c89, type: 2}
-    posX: GL|GU
+    posX: GL|GUp
     negX: GL|GL
     posY: air
     negY: solid
-    posZ: GU|GL
+    posZ: GUp|GL
     negZ: GL|GL
   - tile: {fileID: 11400000, guid: 6d0c4af9365f74840b13fa62ea9c7073, type: 2}
-    posX: GU|GU
+    posX: GUc|GUc
     negX: GU|GL
     posY: air
     negY: solid
-    posZ: GU|GU
+    posZ: GUc|GUc
     negZ: GL|GU
   - tile: {fileID: 11400000, guid: 14b525c5560e244e09ad00f13e2fc46e, type: 2}
     posX: GU|#
@@ -4749,21 +4735,21 @@ MonoBehaviour:
     negX: GL|.
     posY: air
     negY: uS1|uS1|uS0|uS0
-    posZ: GL|GL
+    posZ: GLc|GLc
     negZ: .|.
   - tile: {fileID: 11400000, guid: 2c0774a97897c4a4793bc86bc73a3767, type: 2}
-    posX: .|GL
+    posX: .|GLp
     negX: .|.
     posY: air
     negY: uO1|uO0|uO0|uO0
-    posZ: GL|.
+    posZ: GLp|.
     negZ: .|.
   - tile: {fileID: 11400000, guid: b06668a8e44614f66bcd49567803bb1c, type: 2}
-    posX: GL|GL
+    posX: GLc|GLc
     negX: GL|.
     posY: air
     negY: uI1|uI1|uI0|uI1
-    posZ: GL|GL
+    posZ: GLc|GLc
     negZ: .|GL
   compatible:
   - a: Ol
@@ -4796,6 +4782,35 @@ MonoBehaviour:
     b: '#'
   - a: edge
     b: .
+  - a: GUc
+    b: GU
+  - a: GLc
+    b: GL
+  - a: GUp
+    b: GU
+  - a: GLp
+    b: GL
+  - a: edge
+    b: GUc
+  - a: edge
+    b: GLc
+  - a: edge
+    b: GUp
+  - a: edge
+    b: GLp
+  - a: Ol
+    b: GLc
+  - a: Or
+    b: GLc
+  - a: Gl
+    b: GLc
+  - a: Gr
+    b: GLc
+  exclusive:
+  - GUc
+  - GLc
+  - GUp
+  - GLp
 --- !u!4 &1803873239
 Transform:
   m_ObjectHideFlags: 0
