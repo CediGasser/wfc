@@ -25,6 +25,23 @@ namespace Wfc.Authoring
             this.mode = mode;
             this.tile = tile;
         }
+
+        public bool IsSet => mode == BoundaryMode.Tile && tile != null;
+
+        /// <summary>
+        /// The variants of the boundary tile, which the solver treats as lying just outside the side
+        /// (<see cref="WfcSolver.ConstrainSide"/>). <paramref name="tileSet"/> is the tile set <paramref name="data"/>'s
+        /// tile indices refer to. Null for unset sides, empty if the tile isn't part of the rules.
+        /// </summary>
+        public List<int> GetOutsideVariants(RulesetData data, TileSet tileSet)
+        {
+            if (!IsSet)
+            {
+                return null;
+            }
+            int index = tileSet != null ? tileSet.IndexOf(tile) : -1;
+            return data.GetVariants(index).ToList();
+        }
     }
 
     /// <summary>
@@ -326,12 +343,11 @@ namespace Wfc.Authoring
             {
                 var side = (Direction)d;
                 BoundarySide boundary = GetBoundary(side);
-                if (boundary.mode != BoundaryMode.Tile || boundary.tile == null)
+                List<int> outside = boundary.GetOutsideVariants(data, tileSet);
+                if (outside == null)
                 {
                     continue;
                 }
-                int tile = tileSet != null ? tileSet.IndexOf(boundary.tile) : -1;
-                List<int> outside = data.GetVariants(tile).ToList();
                 if (outside.Count == 0)
                 {
                     Debug.LogWarning($"{name}: boundary tile {boundary.tile.name} isn't part of the ruleset, so the {side.ToShortString()} side is left unconstrained.", this);
