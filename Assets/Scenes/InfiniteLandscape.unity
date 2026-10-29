@@ -466,7 +466,7 @@ MonoBehaviour:
   target: {fileID: 1179409520}
   chunkSize:
     x: 24
-    y: 6
+    y: 12
     z: 24
   radius: 2
   worldSeed: 1
