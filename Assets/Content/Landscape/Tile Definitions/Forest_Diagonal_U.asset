@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Forest_Diagonal_U
   m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
   model: {fileID: 2822572520679361830, guid: de775b586fcb341968c444e3323142d4, type: 3}
+  props: {fileID: 11400000, guid: e22c38f26e7cf467dae581ae4d738b1f, type: 2}
   allowedOrientations: 2
   customOrientationMask: 1
   symmetry: 0

@@ -44,6 +44,7 @@ namespace Wfc.Authoring
             ChunkLayers.Changed += OnLayerChanged;
             TileDefinition.Changed += OnDefinitionChanged;
             TileSet.Changed += OnTileSetChanged;
+            PropSet.Changed += OnPropSetChanged;
             SyncAll();
         }
 
@@ -52,6 +53,7 @@ namespace Wfc.Authoring
             ChunkLayers.Changed -= OnLayerChanged;
             TileDefinition.Changed -= OnDefinitionChanged;
             TileSet.Changed -= OnTileSetChanged;
+            PropSet.Changed -= OnPropSetChanged;
             DestroyVisuals();
         }
 
@@ -84,6 +86,23 @@ namespace Wfc.Authoring
             if (changed == Chunk.TileSet)
             {
                 RebuildDelayed();
+            }
+        }
+
+        private void OnPropSetChanged(PropSet changed)
+        {
+            TileSet tileSet = Chunk.TileSet;
+            if (tileSet == null)
+            {
+                return;
+            }
+            foreach (TileDefinition definition in tileSet.Tiles)
+            {
+                if (definition != null && definition.Props == changed)
+                {
+                    RebuildDelayed();
+                    return;
+                }
             }
         }
 
@@ -155,7 +174,11 @@ namespace Wfc.Authoring
             wrapper.transform.localScale = scale;
 
             GameObject model = Instantiate(definition.Model, wrapper.transform, false);
-            foreach (Transform part in model.GetComponentsInChildren<Transform>(true))
+            if (definition.Props != null)
+            {
+                PlaceProps(definition.Props, model.transform, wrapper.transform);
+            }
+            foreach (Transform part in wrapper.GetComponentsInChildren<Transform>(true))
             {
                 part.gameObject.hideFlags = VisualFlags;
             }
@@ -164,6 +187,30 @@ namespace Wfc.Authoring
             UnityEditor.SceneVisibilityManager.instance.DisablePicking(wrapper, true);
 #endif
             return wrapper;
+        }
+
+        /// <summary>
+        /// Fills the model's sockets with props. Each socket is seeded by its world position, so a cell gets the same
+        /// props whenever it's shown again, independent of the chunk layout.
+        /// </summary>
+        private static void PlaceProps(PropSet propSet, Transform model, Transform wrapper)
+        {
+            foreach (Transform socket in model.GetComponentsInChildren<Transform>(true))
+            {
+                if (!propSet.IsSocket(socket))
+                {
+                    continue;
+                }
+                var key = (int3)math.round((float3)socket.position * 100f);
+                if (!propSet.Pick(math.hash(key), out GameObject prefab, out float yaw, out float scale))
+                {
+                    continue;
+                }
+                GameObject prop = Instantiate(prefab, wrapper, false);
+                prop.transform.localPosition = wrapper.InverseTransformPoint(socket.position);
+                prop.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+                prop.transform.localScale = Vector3.one * scale;
+            }
         }
 
         private Transform GetOrCreateContainer()

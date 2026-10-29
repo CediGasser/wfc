@@ -21,6 +21,9 @@ namespace Wfc.Authoring
         [Tooltip("Model shown for this tile. Its pivot is the cell centre and it should fill a 1 m cube. Leave empty for air or other invisible tiles.")]
         [SerializeField] private GameObject model;
 
+        [Tooltip("Optional decoration placed on the model's sockets, e.g. trees on forest ground. Visual only.")]
+        [SerializeField] private PropSet props;
+
         [Tooltip("Orientations this tile may appear in. Choose the full set even for symmetric models; identical-looking variants are merged automatically.")]
         [SerializeField] private OrientationPreset allowedOrientations = OrientationPreset.YawMirror;
 
@@ -41,6 +44,8 @@ namespace Wfc.Authoring
         public static event Action<TileDefinition> Changed;
 
         public GameObject Model => model;
+
+        public PropSet Props => props;
 
         /// <summary>False for invisible tiles such as air.</summary>
         public bool HasModel => model != null;

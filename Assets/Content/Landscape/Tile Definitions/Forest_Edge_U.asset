@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Forest_Edge_U
   m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
   model: {fileID: 3636245990261115827, guid: c40429ef2b7b648028052dda9fea8649, type: 3}
+  props: {fileID: 11400000, guid: e22c38f26e7cf467dae581ae4d738b1f, type: 2}
   allowedOrientations: 2
   customOrientationMask: 1
   symmetry: 0

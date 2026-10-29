@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a5ff648443a64c9e924afa89c80a994, type: 3}
+  m_Name: GrassProps
+  m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.PropSet
+  socketPrefix: PropSocket
+  props:
+  - prefab: {fileID: 4316357628195953608, guid: fe3192133c488423ca52fc9c728f428d, type: 3}
+    weight: 2
+  - prefab: {fileID: 2078957731156758814, guid: 2d006f4a3dfa9490da869481e453052d, type: 3}
+    weight: 1
+  fillChance: 0.04
+  scaleRange: {x: 0.8, y: 1.2}
+  randomYaw: 1

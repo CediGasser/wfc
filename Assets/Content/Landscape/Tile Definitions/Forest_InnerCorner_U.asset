@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Forest_InnerCorner_U
   m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
   model: {fileID: 2095862127733473876, guid: a30961302438b464c86360a34ec977e1, type: 3}
+  props: {fileID: 11400000, guid: e22c38f26e7cf467dae581ae4d738b1f, type: 2}
   allowedOrientations: 2
   customOrientationMask: 1
   symmetry: 0

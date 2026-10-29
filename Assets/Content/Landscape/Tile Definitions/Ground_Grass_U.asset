@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: Ground_Grass_U
   m_EditorClassIdentifier: Wfc.Authoring::Wfc.Authoring.TileDefinition
   model: {fileID: 2790107201830109857, guid: 03d99307e623444f292db7ffd60fdcf5, type: 3}
+  props: {fileID: 11400000, guid: 9145ed110d2dc4e5bb845383d5de033d, type: 2}
   allowedOrientations: 2
   customOrientationMask: 1
   symmetry: 0
   baseWeight: 5
   gizmoColor: {r: 0.4, g: 0.85, b: 0.35, a: 1}
   detectedSymmetryMask: 56075093016627
-  detectedSymmetrySource: 03d99307e623444f292db7ffd60fdcf5:6f11bd8b9b5cd55899fbb99f68258c4b
+  detectedSymmetrySource: 03d99307e623444f292db7ffd60fdcf5:a27b5398abc7e91d90cc192532986ab7

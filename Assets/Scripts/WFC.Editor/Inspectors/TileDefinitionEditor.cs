@@ -10,6 +10,7 @@ namespace Wfc.Editor
         private static readonly string[] PermutationLabels = { "XYZ", "XZY", "YXZ", "YZX", "ZXY", "ZYX" };
 
         private SerializedProperty model;
+        private SerializedProperty props;
         private SerializedProperty allowedOrientations;
         private SerializedProperty customOrientationMask;
         private SerializedProperty symmetry;
@@ -20,6 +21,7 @@ namespace Wfc.Editor
         private void OnEnable()
         {
             model = serializedObject.FindProperty("model");
+            props = serializedObject.FindProperty("props");
             allowedOrientations = serializedObject.FindProperty("allowedOrientations");
             customOrientationMask = serializedObject.FindProperty("customOrientationMask");
             symmetry = serializedObject.FindProperty("symmetry");
@@ -37,6 +39,7 @@ namespace Wfc.Editor
             {
                 EditorGUILayout.HelpBox("No model: this is an empty tile, such as air.", MessageType.None);
             }
+            EditorGUILayout.PropertyField(props);
             EditorGUILayout.PropertyField(allowedOrientations);
             if ((OrientationPreset)allowedOrientations.enumValueIndex == OrientationPreset.Custom)
             {
